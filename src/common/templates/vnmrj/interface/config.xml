@@ -9,7 +9,7 @@
  -->
 
 <template name="vconfig" element="pages" type="acquisition" >
-  <group size="400 150"
+  <group size="400 100"
     style="Heading1"
     label="Flags"
     bg=""
@@ -23,7 +23,7 @@
     subtype="Basic"
     expanded="yes"
     >
-    <group loc="20 140" size="260 30"
+    <group loc="20 100" size="260 30"
       show="exists(systemdir+'/conpar','file','rw'):$VALUE $VALUE=1-$VALUE"
       bg=""
       border="None"
@@ -52,7 +52,7 @@
         chval="datastation"
         />
     </menu>
-    <menu loc="190 100" size="180 20"
+    <menu loc="190 70" size="180 20"
       style="PlainText"
       vq="bnc"
       vc="bnc=$VALUE"
@@ -67,32 +67,24 @@
         chval="1"
         />
     </menu>
-    <entry loc="190 70" size="180 20"
+    <entry loc="190 40" size="180 20"
       style="PlainText"
       vq="lockfreq"
       vc="lockfreq=$VALUE"
       set="$VALUE=lockfreq"
       digits="7"
       />
-    <label loc="10 100" size="170 20"
+    <label loc="10 70" size="170 20"
       style="Label1"
       label="Microwave connection"
       />
-    <label loc="10 70" size="170 20"
+    <label loc="10 40" size="170 20"
       style="Label1"
       label="Lock Frequency"
       />
     <label loc="10 10" size="170 20"
       style="Label1"
       label="System"
-      />
-    <label loc="10 40" size="170 20"
-      style="Label1"
-      label="Proton Frequency"
-      />
-    <label loc="190 40" size="170 20"
-      style="Label1"
-      label="14 MHz"
       />
   </group>
 </template>
