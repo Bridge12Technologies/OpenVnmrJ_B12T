@@ -1,0 +1,34 @@
+#!/bin/bash
+#
+# Copyright (C) 2018  University of Oregon
+# 
+# You may distribute under the terms of either the GNU General Public
+# License or the Apache License, as specified in the LICENSE file.
+# 
+# For more information, see the LICENSE file.
+# 
+#
+# set -x
+
+toolList=' 
+  g++
+  gcc
+  git
+  libc6-dev
+  libmotif-dev
+  libusb-dev
+  libx11-dev
+  gcc-multilib
+  libxt-dev
+  make
+  scons
+ '
+
+sudo apt update
+. /etc/lsb-release
+distmajor=${DISTRIB_RELEASE:0:2}
+if [ $distmajor -gt 18 ] ; then
+   sudo apt install -y $toolList libstdc++-8-dev
+else
+   sudo apt install -y $toolList libstdc++-7-dev
+fi
