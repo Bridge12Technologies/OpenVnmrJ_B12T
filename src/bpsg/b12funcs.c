@@ -10,6 +10,7 @@
 #include "acqparms.h"
 #include "b12funcs.h"
 #include "vnmrsys.h"
+#include "abort.h"
 
 extern void dps_off(void);
 extern void dps_on(void);
@@ -21,6 +22,69 @@ extern int lIndex;
 extern FILE *psgFile;
 
 static char lastElem[512];
+
+#define POWER_REGISTERS 4
+int powerVals = 0;
+int powerVal[POWER_REGISTERS];
+
+void initPowerVal()
+{
+   int i;
+
+   powerVals = 1;
+   powerVal[0] = 1000; // Reg 0 is always hard pulse
+   for (i=1; i < POWER_REGISTERS; i++)
+   {
+      powerVal[i] = -1;
+   }
+}
+
+static int getPowerRegister(double amp)
+{
+   int val;
+   int i;
+
+   val = (int) ( (amp * 10.0) + 0.1);
+   for (i=0; i < powerVals; i++)
+   {
+      if (val == powerVal[i])
+         return(i);
+   }
+   return(0);
+}
+
+void addPowerVal(double amp)
+{
+   int val;
+   int i;
+   int found;
+
+   val = (int) ( (amp * 10.0) + 0.1);
+   found = 0;
+   for (i=0; i < POWER_REGISTERS; i++)
+   {
+      if (val == powerVal[i])
+         found = 1;
+   }
+   if ( ! found )
+   {
+      if (powerVals < POWER_REGISTERS)
+      {
+         powerVal[powerVals] = val;
+         powerVals += 1;
+      }
+      else
+      {
+         abort_message("only %d different power levels are supported", POWER_REGISTERS);
+      }
+   }
+}
+
+void sendPowerVal()
+{
+   fprintf(psgFile,"POWERS %d %d %d %d %d\n",powerVals,
+		   powerVal[0], powerVal[1], powerVal[2], powerVal[3]);
+}
 
 /*----------------------------------------------------------------
 |   delay(time)/1
@@ -85,15 +149,22 @@ void acquire(double datapnts, double dwell )
    }
 }
 
-void power(double amp )
+void rlpower(double amp, int dev )
 {
    if (psgFile)
    {
+      int index;
       if (lastElem[0] != '\0')
          fprintf(psgFile,"%s\n",lastElem);
-      sprintf(lastElem,"POWER %g",amp);
+      index = getPowerRegister(amp);
+      sprintf(lastElem,"POWER %d",index);
+   }
+   else
+   {
+      addPowerVal(amp);
    }
 }
+
 void status(int state)
 {
    if (psgFile)
@@ -105,23 +176,6 @@ void status(int state)
       else
          sprintf(lastElem,"STATUS %d %d",bnc,(xm[xmsize-1]=='y') ? 1 : 0);
    }
-}
-
-void microwavedelay(double duration)
-{
-   if (duration <= 0.0)
-      return;
-   dps_off();
-   if (psgFile)
-   {
-      if (lastElem[0] != '\0')
-         fprintf(psgFile,"%s\n",lastElem);
-      fprintf(psgFile,"STATUS %d %d",bnc, 1);
-      fprintf(psgFile,"DELAY %g", duration);
-      sprintf(lastElem,"STATUS %d %d",bnc, 0);
-      totaltime += duration;
-   }
-   dps_on();
 }
 
 void endElems()

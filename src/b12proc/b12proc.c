@@ -87,11 +87,12 @@ struct _Exps {
                   int opCode;
                   int opCodeData;
                   int status;
+		  int useAmp;
+		  int useShape;
                   double sw_kHz;
                   double actual_sw;
                   double at;
                   double sfrq;
-                  double tpwrf;
                   double exp_time;
              };
 typedef struct _Exps Exps;
@@ -223,7 +224,6 @@ void printExps(Exps *exps)
    diagMessage("  actual_sw:     %g\n",exps->actual_sw);
    diagMessage("  at:            %g\n",exps->at);
    diagMessage("  sfrq:          %g\n",exps->sfrq);
-   diagMessage("  tpwrf:         %g\n",exps->tpwrf);
 }
 
 int initSystem(Globals *globals)
@@ -274,6 +274,8 @@ void shape_sinc (float *shape_data, void *nlobe){
 
 int configSystem(Globals *globals)
 {
+   int i;
+
    pb_set_defaults ();
    pb_core_clock (globals->adc_frequency);
 	
@@ -282,9 +284,11 @@ int configSystem(Globals *globals)
 
    // Load the shape parameters
    float shape_data[1024];
-   int num_lobes = 3;
+//   int num_lobes = 3;
 
-   make_shape_data (shape_data, (void *) &num_lobes, shape_sinc);
+//   make_shape_data (shape_data, (void *) &num_lobes, shape_sinc);
+   for (i = 0; i < 1024; i++)  // rectangular shape
+      shape_data[i] = 1.0;
    pb_dds_load (shape_data, DEVICE_SHAPE);
    return(0);
 }
@@ -293,7 +297,6 @@ int configExp(Globals *globals, Exps *exps)
 {
    int cmd = 0;
 
-   pb_set_amp(exps->tpwrf/100.0, 0);
    if (globals->bypass_fir)
       cmd = BYPASS_FIR;
    exps->dec_amount = pb_setup_filters (exps->sw_kHz/1000.0, exps->nt, cmd);
@@ -534,6 +537,8 @@ int main (int argc, char *argv[])
          exps.elem= atof(r->vals);
          exps.opCode = CONTINUE;
          exps.status = BLANK_PA;
+	 exps.useAmp = AMP0;
+	 exps.useShape = NO_SHAPE;
          resetExp(0, &exps);
          if (exps.elem == 1)
          {
@@ -568,9 +573,20 @@ int main (int argc, char *argv[])
 	 sprintf(cmd,"/vnmr/bin/mcl_RUDAT %s\n",r->vals);
          ret = system(cmd);
       }
-      else if ( ! strcmp(r->inst,"POWER") )
+      else if ( ! strcmp(r->inst,"POWERS") )
       {
-         exps.tpwrf= atof(r->vals);
+         int i;
+         int num;
+	 int val[4];
+
+         sscanf(r->vals,"%d %d %d %d %d", &num, &(val[0]), &(val[1]),
+                                          &(val[2]), &(val[3]));
+	 for (i=0; i<num; i++)
+	 {
+            pb_set_amp((double) val[i]/1000.0, i);
+	 }
+	 exps.useAmp = AMP0;
+	 exps.useShape = NO_SHAPE;
       }
       else if ( ! strcmp(r->inst,"SPECTROMETER_FREQUENCY") )
       {
@@ -584,6 +600,12 @@ int main (int argc, char *argv[])
       else if ( ! strcmp(r->inst,"SPECTRAL_WIDTH") )
       {
          exps.sw_kHz= atof(r->vals)/1000.0;
+      }
+      else if ( ! strcmp(r->inst,"POWER") )
+      {
+	 int num = atoi(r->vals);
+	 exps.useAmp = num;
+	 exps.useShape = (num > 0) ? 1 : NO_SHAPE;
       }
       else if ( ! strcmp(r->inst,"PULSE_ELEMENTS") )
       {
@@ -646,18 +668,21 @@ int main (int argc, char *argv[])
             {
                pbRes = pb_inst_radio_shape (0, PHASE090, PHASE000, iphase,
                   TX_ENABLE, exps.phaseReset,
-                  NO_TRIGGER, NO_SHAPE, AMP0, globals.blank_bit_mask + exps.status,
+                  NO_TRIGGER, exps.useShape, exps.useAmp,
+		  globals.blank_bit_mask + exps.status,
                   CONTINUE, NO_DATA, duration * 1e9);
                pbRes = pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
                   TX_DISABLE, exps.phaseReset,
-                  NO_TRIGGER, NO_SHAPE, AMP0, globals.blank_bit_mask + exps.status,
+                  NO_TRIGGER, NO_SHAPE, AMP0,
+		  globals.blank_bit_mask + exps.status,
                   exps.opCode, exps.opCodeData, ringdown_delay * 1e9);
             }
             else
             {
                pbRes = pb_inst_radio_shape (0, PHASE090, PHASE000, iphase,
                   TX_ENABLE, exps.phaseReset,
-                  NO_TRIGGER, NO_SHAPE, AMP0, globals.blank_bit_mask + exps.status,
+                  NO_TRIGGER, exps.useShape, exps.useAmp,
+		  globals.blank_bit_mask + exps.status,
                   exps.opCode, exps.opCodeData, duration * 1e9);
             }
             exps.exp_time += duration + ringdown_delay;
@@ -700,7 +725,8 @@ int main (int argc, char *argv[])
  */
          pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
                TX_DISABLE, NO_PHASE_RESET,
-               NO_TRIGGER, NO_SHAPE, AMP0, exps.status,
+               NO_TRIGGER, NO_SHAPE, AMP0,
+	       exps.status,
                STOP, NO_DATA, MIN_DELAY);
          exps.exp_time += MIN_DELAY * 1e-9;
 
@@ -731,23 +757,28 @@ int main (int argc, char *argv[])
 	 unlink(dataPath);
 	 pbRes = pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
                   TX_ENABLE, exps.phaseReset,
-                  NO_TRIGGER, NO_SHAPE, AMP0, globals.blank_bit_mask + exps.status,
+                  NO_TRIGGER, exps.useShape, exps.useAmp,
+		  globals.blank_bit_mask + exps.status,
                   CONTINUE, NO_DATA, 1e3);
          loops = pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
                   TX_ENABLE, exps.phaseReset,
-                  NO_TRIGGER, NO_SHAPE, AMP0, globals.blank_bit_mask + exps.status,
+                  NO_TRIGGER, exps.useShape, exps.useAmp,
+		  globals.blank_bit_mask + exps.status,
                   LOOP, 1000000000, 1e3);
          loops = pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
                   TX_ENABLE, exps.phaseReset,
-                  NO_TRIGGER, NO_SHAPE, AMP0, globals.blank_bit_mask + exps.status,
+                  NO_TRIGGER, exps.useShape, exps.useAmp,
+		  globals.blank_bit_mask + exps.status,
                   WAIT, 0, 1e6);
          pbRes = pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
                   TX_ENABLE, exps.phaseReset,
-                  NO_TRIGGER, NO_SHAPE, AMP0, globals.blank_bit_mask + exps.status,
+                  NO_TRIGGER, exps.useShape, exps.useAmp,
+		  globals.blank_bit_mask + exps.status,
                   END_LOOP, loops, 1e3);
          pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
                TX_DISABLE, NO_PHASE_RESET,
-               NO_TRIGGER, NO_SHAPE, AMP0, exps.status,
+               NO_TRIGGER, NO_SHAPE, AMP0,
+	       exps.status,
                STOP, NO_DATA, MIN_DELAY);
          pb_stop_programming();
          pb_reset();

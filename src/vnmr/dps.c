@@ -7224,6 +7224,10 @@ int	origin;
            microwave = 1;
 	   if (P_getstring(CURRENT, "xm", dmstr[numrfch+1], 1, 30) < 0)
                 strcpy(dmstr[numrfch+1], "nnnnn");
+	   cattn[numrfch+1] = dps_get_real(CURRENT,"mpspower", 1, 0.0);
+	   fineStep[numrfch+1] = 0.0;
+	   powerMax[numrfch+1] = 40.0;
+	   powerCh[numrfch+1] = cattn[numrfch+1];
            continue;
         }
 	if (type >= 900)
@@ -8586,7 +8590,10 @@ int	ct, do_link;
 		        curnode->y2 = orgy[dev] + pulseHeight / 3;
 */
 		        curnode->y3 = orgy[dev];
-		        set_chan_height(curnode, powerCh[dev]);
+	                if (microwave && (dev == numrfch+1) )
+		           set_chan_height(curnode, cattn[dev]);
+			else
+		           set_chan_height(curnode, powerCh[dev]);
 			curnode->power = powerCh[dev];
 		    	comnode->catt = coarseAttn[dev];
 		    	comnode->fatt = fineAttn[dev];
@@ -11565,7 +11572,7 @@ disp_chan_mark()
         {
            rfchan[numrfch+1] = 1;
            visibleCh[numrfch+1] = 1;
-           strcpy(dnstr[numrfch+1],"wave");
+	   strcpy(dnstr[numrfch+1],"MW");
         }
 	for (k = TODEV; k < RFCHAN_NUM; k++)
 	{
@@ -11573,9 +11580,7 @@ disp_chan_mark()
 	    {
 		// amove(dpsX, orgy[k] + ycharpixels / 5);
                 // dstring(ch_label[k]);
-                if (microwave && (k == numrfch+1))
-                   dps_string(dpsX, orgy[k] + ycharpixels / 5, "Micro");
-                else
+                if ( ! microwave || (k <= numrfch) )
                    dps_string(dpsX, orgy[k] + ycharpixels / 5, ch_label[k]);
 		// amove(dpsX, orgy[k] - ycharpixels * 4/ 5);
                 if (dnstr[k][0] != '0') {
@@ -13740,7 +13745,12 @@ int		d_level;
                            }
 			}
 		        if(d_link && comnode->val[1] && (dispMode & POWERMODE))
+			{
+                          if (microwave && (dev == numrfch+1) )
+           	           disp_value(dev,cx,dx,cnode->y2,cattn[dev],POWERMODE);
+			  else
            	           disp_value(dev,cx,dx,cnode->y2,cnode->power,POWERMODE);
+			}
 		        chyc[dev] = cnode->y2;
 		     }
 /**
@@ -14775,7 +14785,10 @@ draw_pulse(snode, show_value, sweep_pulse)
 /*
 	      if (rfType[chan] >= GEMINIH)
 */
-                  disp_value(chan, x1, x2, y2, snode->power, POWERMODE);
+              if (microwave && (chan == numrfch+1) )
+                  disp_value(chan, x1, x2, y2, cattn[chan], POWERMODE);
+	      else
+                  disp_value(chan, x1, x2, y2, cnode->catt, POWERMODE);
 	}
 	else if (dispMode & PHASEMODE)
 	{
@@ -15645,6 +15658,12 @@ int	  shaped, ap;
         	if (cnode->type == SHVPUL)   {
 		   info_print(" Amp:   %s = %d", pnode->vlabel[1], pnode->val[5]);
 		}
+		if (microwave)
+		{
+		info_print(" Power:       %g %%", pnode->catt);
+		}
+		else
+		{
 	        info_print(" Power:       %g dB", modify_float_value(cnode->power, 3));
 	       	if (rfType[dev] >= UNITY)
 		{
@@ -15656,6 +15675,7 @@ int	  shaped, ap;
                      if (pnode->flabel[3] != NULL)
                         info_print(" Offset:        %s = %g ",pnode->flabel[3],pnode->fval[3]);
 	       	}
+		}
 	    }
 	}
         if (cnode->type == SHACQ) {
@@ -16218,15 +16238,25 @@ SRC_NODE     *cnode;
 			   k = val[0];
 			else
 			   k--;
-			info_print(" %s: %c", dmm_labels[dev], dmmstr[dev][k]);
-			info_print(" %s: %g", dmf_labels[dev], dmf_val[dev]);
+			if ( ! microwave )
+			{
+			   info_print(" %s: %c", dmm_labels[dev], dmmstr[dev][k]);
+			   info_print(" %s: %g", dmf_labels[dev], dmf_val[dev]);
+			}
 		    }
 	    	    if (dev < RFCHAN_NUM && rfType[dev] >= UNITY)
 	    	    {
-		        info_print(" Power:        %g dB", cnode->power);
-		        info_print(" Coarse Power: %g ", comnode->catt);
-	       		if (fineStep[dev] > 1)
-		            info_print(" Fine Power:   %g ", comnode->fatt);
+		        if (microwave)
+			{
+		           info_print(" MPS Power: %g dBm", cattn[dev]);
+			}
+			else
+			{
+		           info_print(" Power:        %g dB", cnode->power);
+		           info_print(" Coarse Power: %g ", comnode->catt);
+	       		   if (fineStep[dev] > 1)
+		               info_print(" Fine Power:   %g ", comnode->fatt);
+			}
 	    	    }
 		    else
 		        info_print(" Power: %g dB", cnode->power);
@@ -16361,6 +16391,8 @@ SRC_NODE     *cnode;
 		// info_print(" Channel:      %d", cnode->device);
                 disp_channel(cnode->device);
 		info_print(" Set:          %s = %g", flabel[0], fval[0]);
+		if ( ! microwave )
+		{
 		info_print(" Power:        %g dB", cnode->power);
 	    	if (rfType[cnode->device] >= UNITY)
 		{
@@ -16368,6 +16400,7 @@ SRC_NODE     *cnode;
 	       	   if (fineStep[cnode->device] > 1)
 		       info_print(" Fine Power:   %g", comnode->fatt);
 	  	}
+		}
 		break;
 	case DECLVL:
 		if (fval[0])

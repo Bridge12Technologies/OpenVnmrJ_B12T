@@ -15,7 +15,6 @@
 
 extern void acquire(double datapnts, double dwell );
 extern void delay(double time);
-extern void microwavedelay(double duration);
 extern void offset(double frequency );
 extern void power(double amp );
 extern void pulse(double time, int phase);
@@ -25,6 +24,10 @@ extern void mpsTune(double freq, double width, double power);
 extern void mTune(double freq, double width);
 
 extern int bnc;
+extern void initPowerVal();
+extern void addPowerVal(double amp);
+extern void rlpower(double amp, int dev);
+extern void sendPowerVal();
 
 
 /* --- sequence status constants --- */

@@ -93,6 +93,7 @@ int v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14;
 int tablert, tpwrrt, dhprt, tphsrt, dphsrt, dlvlrt;
 int lIndex;
 
+
 /*-----------------------------------------------------------------------
 |  createPS()
 |	create the acode for the Pulse Sequence.
@@ -121,7 +122,9 @@ void createPS()
     totalScans = (int) (nt+0.1);
     fprintf(psgFile,"NUMBER_OF_SCANS %d\n",totalScans);
     fprintf(psgFile,"SPECTRAL_WIDTH %g\n",sw);
-    fprintf(psgFile,"POWER %g\n",tpwrf);
+//    fprintf(psgFile,"POWER %g\n",tpwrf);
+    initPowerVal();
+    addPowerVal(tpwrf);
     double actual_sw = calc_sw(sw, (int) (nt+0.1) );
     if ( fabs(sw-actual_sw) > 0.1 )
     {
@@ -159,13 +162,14 @@ void createPS()
 			/* test HSlines against presHSlines */
 
     initPhaseTables();
-    fprintf(psgFile,"PULSE_ELEMENTS START\n");
-    fprintf(psgFile,"RATTN %g\n",rattn);
     tmpFD = psgFile;
     psgFile = NULL;
     pulsesequence();
-    maxPh = maxPhaseCycle();
     psgFile = tmpFD;
+    sendPowerVal();
+    fprintf(psgFile,"PULSE_ELEMENTS START\n");
+    fprintf(psgFile,"RATTN %g\n",rattn);
+    maxPh = maxPhaseCycle();
     chkLoop(maxPh, totalScans, &nscLoop, &loopCnt, &remCnt);
     if (nscLoop)
     {
@@ -177,6 +181,7 @@ void createPS()
        pre_fidsequence();		/* users pre fid functions */
     fprintf(psgFile,"PHASE_RESET 1\n");
     initElems();
+    rlpower(tpwrf,0);
     pulsesequence();	/* generate Acodes from USER Pulse Sequence */
    if (acqtriggers == 0)
    {
