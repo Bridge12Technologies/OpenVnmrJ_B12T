@@ -17,9 +17,10 @@ ncommPath = os.path.join(cwd, os.pardir, 'ncomm')
 # os.system(cmd)
 
 # dependancies
-binPath = os.path.join(cwd, os.pardir, 'bin')
-#SConscript(os.path.join(binPath, 'SConstruct'))
-cmd='cd ../bin;scons -f SConstruct.dps_ps_gen'
+if os.path.exists('/usr/bin/scons'):
+   cmd='cd ../bin;scons -f SConstruct.dps_ps_gen'
+else:
+   cmd='cd ../bin;scons-3 -f SConstruct.dps_ps_gen'
 os.system(cmd)
 
 psgPath = os.path.join(cwd, os.pardir, 'bpsg')

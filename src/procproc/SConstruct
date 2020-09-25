@@ -37,7 +37,7 @@ ncommHdrList = [ 'chanLib.h',
                  'shrMLib.h',
                  'sockets.h' ]
 
-SConscript(os.path.join(ncommPath, 'SConstruct'))
+# SConscript(os.path.join(ncommPath, 'SConstruct'))
 
 # source files
 expprocPath     = os.path.join(cwd, os.pardir, 'expproc')

@@ -14,7 +14,7 @@ ncommPath = os.path.join(cwd, os.pardir, 'ncomm')
 
 # library dependancies
 # build ncomm library
-SConscript(os.path.join(ncommPath, 'SConstruct'))
+# SConscript(os.path.join(ncommPath, 'SConstruct'))
 
 ncommHdrList = [ 'errLogLib.h',
                  'eventHandler.h',

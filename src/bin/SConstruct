@@ -9,7 +9,7 @@ platform = sys.platform
 SConscript('SConstruct.bin')
 SConscript('SConstruct.diffparams')
 SConscript('SConstruct.diffshims')
-SConscript('SConstruct.dps_ps_gen')
+# SConscript('SConstruct.dps_ps_gen')  done by bpsglib
 SConscript('SConstruct.pbox')
 SConscript('SConstruct.send2vnmr')
 # SConscript('SConstruct.tabc')
