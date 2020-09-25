@@ -224,7 +224,7 @@ while [ $# != 0 ]; do
       if [ x$osname = "xLinux" ]; then
          ( make -e -s -f $makefile PS=${file}${dpspost} \
            CPPFLAGS="$incl" \
-           LIB="$psdir" CFLAGS="-O2 -m32 ${Wextra}" LFLAGS="$rpath" \
+           LIB="$psdir" CFLAGS="-O2 -m64 ${Wextra}" LFLAGS="$rpath" \
            SHELL="/bin/sh" DPS_DUMMY_OBJ="$dps_dummy_obj" \
            SEQLIB="$seqlib" psgLinux) 2>> /dev/null
       elif [ x$osname = "xDarwin" ]; then

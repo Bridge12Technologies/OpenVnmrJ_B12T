@@ -58,6 +58,7 @@ PSG_HDR=			\
 		acqparms.h	\
 		allocate.h	\
 		arrayfuncs.h	\
+		b12funcs.h      \
 		cps.h		\
 		CSfuncs.h	\
 		data.h		\
@@ -68,6 +69,7 @@ PSG_HDR=			\
 		params.h	\
 		phase.h		\
 		pvars.h		\
+		shrexpinfo.h	\
 		standard.h	\
 		symtab.h	\
 		tools.h		\
