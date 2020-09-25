@@ -47,6 +47,7 @@ void mpsTuneData(int init, char *outfile0, int msec,
 static int mpsFD = -1;
 static int statusInterval;
 static int statTuneFlag;
+int mpsCmdOk = 0;
 
 int  getStatrateMPS()
 {
@@ -548,6 +549,63 @@ void statusMPS(void)
 #endif
 }
 
+void mpsMode(char *mode)
+{
+   if ( ! strcmp(mode,"ext") )
+   {
+      if (sendMPS("wgstatus 1\n"))
+         return;
+      setMpsWgstatus( 1 );
+      sleepMilliSeconds(10);
+      if (sendMPS("rfstatus 2\n"))
+         return;
+      setMpsRfstatus( 2 );
+      mpsCmdOk = 1;
+   }
+   else if ( ! strcmp(mode,"off") )
+   {
+      if (sendMPS("rfstatus 0\n"))
+         return;
+      setMpsRfstatus( 0 );
+      mpsCmdOk = 0;
+   }
+   else if ( ! strcmp(mode,"on") )
+   {
+      if (sendMPS("wgstatus 1\n"))
+         return;
+      setMpsWgstatus( 1 );
+      sleepMilliSeconds(10);
+      if (sendMPS("rfstatus 1\n"))
+         return;
+      setMpsRfstatus( 1 );
+      mpsCmdOk = 0;
+   }
+}
+
+void mpsPower(int power)
+{
+   char msg[128];
+
+   if ( !mpsCmdOk)
+      return;
+   if (power < 0)
+   {
+      if (sendMPS("rfstatus 0\n"))
+         return;
+      setMpsRfstatus( 0 );
+   }
+   else
+   {
+      sprintf(msg,"power %d\n",power);
+      if (sendMPS(msg))
+         return;
+      setMpsPower( power );
+      if (sendMPS("rfstatus 2\n"))
+         return;
+      setMpsRfstatus( 2 );
+   }
+}
+
 void acqMPS(int stage)
 {
    static int wgstate;
@@ -567,14 +625,15 @@ void acqMPS(int stage)
          return;
       recvMPS(msg, sizeof(msg));
       wgstate = atoi(msg);
+      mpsCmdOk = (rfstate == 2);
 
-      if (sendMPS("wgstatus 1\n"))
-         return;
-      setMpsWgstatus( 1 );
-      sleepMilliSeconds(10);
-      if (sendMPS("rfstatus 2\n"))
-         return;
-      setMpsRfstatus( 2 );
+//      if (sendMPS("wgstatus 1\n"))
+//         return;
+//      setMpsWgstatus( 1 );
+//      sleepMilliSeconds(10);
+//      if (sendMPS("rfstatus 2\n"))
+//         return;
+//      setMpsRfstatus( 2 );
    }
    else if (stage == 1)  // after acquisition reset to previous values
    {

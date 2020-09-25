@@ -169,6 +169,8 @@ void createPS()
     sendPowerVal();
     fprintf(psgFile,"PULSE_ELEMENTS START\n");
     fprintf(psgFile,"RATTN %g\n",rattn);
+    if (mpspoweractive)
+       fprintf(psgFile,"MPSPOWER %g\n",mpspower);
     maxPh = maxPhaseCycle();
     chkLoop(maxPh, totalScans, &nscLoop, &loopCnt, &remCnt);
     if (nscLoop)
@@ -227,8 +229,6 @@ void createPS()
 +------------------------------------------------------------------*/
 void initparms()
 {
-    double getval();
-    double getvalnwarn();
     char   tmpstr[20];
 
     sw = getval("sw");
@@ -251,6 +251,19 @@ void initparms()
     else if (!var_active("rattn",CURRENT))
     {
 	rattn = 0.0;
+    }
+    if (P_getstring(CURRENT,"mps",mps,1,12) < 0)
+       strcpy(mps,"ext");
+    if ( ! strcmp(mps,""))
+       strcpy(mps,"ext");
+    mpspoweractive = 1;
+    if ( P_getreal(CURRENT,"mpspower",&mpspower,1) < 0 )
+    {
+        mpspoweractive = 0;
+    }
+    else if (!var_active("mpspower",CURRENT))
+    {
+        mpspoweractive = 0;
     }
 
 /*****************************

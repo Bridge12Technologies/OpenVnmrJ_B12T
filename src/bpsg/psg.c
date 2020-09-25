@@ -157,6 +157,7 @@ double  cattn[MAX_RFCHAN_NUM+1]; /* indicates coarse attenuators for channels */
 double  fattn[MAX_RFCHAN_NUM+1]; /* indicates fine attenuators for channels */
 
 char dqd[MAXSTR];	/* Digital Quadrature Detection, y or n */
+char mps[MAXSTR];	/* MPS mode */
 
 /* --- global flags --- */
 int  newacq = 1;	/* temporary nessie flag */
@@ -232,6 +233,8 @@ double  dmf3;		/* 3rd decoupler modulation frequency */
 double  dmf4;		/* 4th decoupler modulation frequency */
 double  fb;		/* filter bandwidth */
 double  rattn; 		/* Receive attenuation */
+double  mpspower;	/* MPS power level */
+int     mpspoweractive;	/* MPS power active */
 int     cpflag;  	/* phase cycling flag  1=none,  0=quad detection */
 int     dhpflag;	/* decoupler High Power Flag */
 
@@ -793,6 +796,7 @@ int main(int argc, char *argv[])
        }
        fprintf(psgFile,"FILE           %s\n",exppath);
        fprintf(psgFile,"ARRAYDIM       %d\n",(int) (arraydim+0.1));
+       fprintf(psgFile,"MPS            %s\n",mps);
     }
     sfrq_base =sfrq;
 

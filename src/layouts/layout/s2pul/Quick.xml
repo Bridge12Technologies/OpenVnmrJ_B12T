@@ -261,6 +261,36 @@
       subtype="Untitled"
       expanded="yes"
       >
+      <menu loc="150 25" size="70 20"
+        style="PlainText"
+        label="menu"
+        vq="mps"
+        vc="mps='$VALUE'"
+        set="$VALUE=mps"
+        editable="No"
+        >
+        <mlabel 
+          label="Manual"
+          chval="manual"
+          />
+        <mlabel 
+          label="OFF"
+          chval="off"
+          />
+        <mlabel 
+          label="ON"
+          chval="on"
+          />
+        <mlabel 
+          label="EXT"
+          chval="ext"
+          />
+      </menu>
+      <label loc="10 25" size="140 20"
+        style="Label1"
+        label="MPS mode"
+        justify="Left"
+        />
       <check loc="205 5" size="20 20"
         style="Label1"
         vq="rattn"

@@ -44,6 +44,7 @@ extern int listCmds();
 extern int mapIn();
 extern int mapOut();
 extern int mpsCmd();
+extern int mpsCntrl();
 extern int mpsData();
 extern int tuneData();
 extern int parmChg();
@@ -97,6 +98,7 @@ cmd table[] = {
     {"mapin"	, mapIn, 	"Map in a Shared Memory Segment" },
     {"mapout"	, mapOut, 	"Map out a Shared Memory Segment" },
     {"mps"	, mpsCmd, 	"Send command to MPS" },
+    {"mpsCntrl"	, mpsCntrl, 	"Send commands from B12proc to MPS" },
     {"mpsData"	, mpsData, 	"Collect MPS tuning data" },
     {"tuneData"	, tuneData, 	"Collect RF tuning data" },
     {"parmchg"	, parmChg, 	"Set processing mask" },

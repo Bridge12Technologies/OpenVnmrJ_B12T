@@ -41,6 +41,7 @@ extern char rfwg[MAXSTR];	/* y/n for rf waveform generators */
 extern char gradtype[MAXSTR];	/* char keys w-waveform gen s-sisco n-none */
 
 extern char dqd[MAXSTR];	/* Digital Quadrature Detection, y or n */
+extern char mps[MAXSTR];	/* MPS mode */
 
 /* --- global flags --- */
 extern int  ok;			/* Global error flag */
@@ -101,6 +102,8 @@ extern double  dmf3;		/* decoupler modulation frequency */
 extern double  dmf4;		/* decoupler modulation frequency */
 extern double  fb;		/* filter bandwidth */
 extern double  rattn; 		/* Receive attenuation */
+extern double  mpspower;	/* MPS power level */
+extern int     mpspoweractive;	/* MPS power active */
 extern double  vttemp; 		/* VT temperauture setting */
 extern double  vtwait; 		/* VT temperature timeout setting */
 extern double  vtc; 		/* VT temperature cooling gas setting */

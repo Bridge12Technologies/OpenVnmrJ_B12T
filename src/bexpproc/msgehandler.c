@@ -2421,9 +2421,26 @@ int mpsCmd(char *args)
    return ( 0 );
 }
 
+int mpsCntrl(char *args)  // called from B12proc. No returnInterface
+{
+   char *cmd;
+   cmd = strtok( NULL, " " );
+   if ( ! strcmp(cmd,"mpsMode"))
+   {
+      char *mode;
+      mode = strtok( NULL, "\n" );
+      mpsMode(mode);
+   }
+   else if ( ! strcmp(cmd,"mpsPower"))
+   {
+      int power;
+      power = (int) (atof(strtok( NULL, "\n" )) *10.0 + 0.1);
+      mpsPower(power);
+   }
+}
+
 int mpsData(char *args)
 {
-   FILE *outFD;
    char msg[256];
    char outfile[256];
    int freq;

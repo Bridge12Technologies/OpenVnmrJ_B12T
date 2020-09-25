@@ -573,6 +573,20 @@ int main (int argc, char *argv[])
 	 sprintf(cmd,"/vnmr/bin/mcl_RUDAT %s\n",r->vals);
          ret = system(cmd);
       }
+      else if ( ! strcmp(r->inst,"MPS") )
+      {
+	 char cmd[512];
+
+	 sprintf(cmd,"mpsCntrl mpsMode %s\n",r->vals);
+	 sendExpMsg(cmd);
+      }
+      else if ( ! strcmp(r->inst,"MPSPOWER") )
+      {
+	 char cmd[512];
+
+	 sprintf(cmd,"mpsCntrl mpsPower %s\n",r->vals);
+	 sendExpMsg(cmd);
+      }
       else if ( ! strcmp(r->inst,"POWERS") )
       {
          int i;
