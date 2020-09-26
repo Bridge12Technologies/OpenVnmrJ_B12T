@@ -36,7 +36,7 @@ scan-to-scan. These tables and variables are initialized and
 manipulated by special pulse-sequence statements, the 
 real-time math statements. 
 
-Compiling pulse sequences
+Writing pulse sequences
 =========================
 
 Pulse sequence text files are stored in a directory named psglib
@@ -49,11 +49,28 @@ which may have any name and path. An
 applications directory is made accessible through the Edit 
 Applications tool of the Files pull down menu.
 A pulse sequence text file can be modified using the Linux 
-tool vi, the standard Red Hat editor gedit, or by an available 
+tool vi, the standard Linux editor gedit, or by an available 
 text editor or development package. 
-Pulse sequence source code is compiled by one of the 
-following methods:
 
+The template for all pulse sequences is:
+
+#include "standard.h"
+
+void pulsesequence()
+{
+  // Pulse elements
+
+}
+
+Since it is a C function, any C construction may be used. The available
+pulse elements are described below. For examples, see the pulse sequences
+in /vnmr/psglib
+
+Compiling pulse sequences
+=========================
+
+After writing a pulse sequence, the source code is compiled by one of the 
+following methods:
   By entering seqgen(filename<.c>) on the OpenVnmrJ command line.
   By entering seqgen on the OpenVnmrJ command line, with seqfil='filename'
   By entering seqgen filename<.c> from a Linux shell
