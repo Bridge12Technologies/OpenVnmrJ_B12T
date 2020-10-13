@@ -88,6 +88,15 @@ extern void      oneLongToTwoShort(int lval, short *sval );
 extern void      sleepSeconds(int secs);
 extern void      sleepMilliSeconds(int msecs);
 
+extern int getMpsWgstatus();
+extern int getMpsRfstatus();
+extern int getMpsAmpstatus();
+extern int getMpsLockstatus();
+extern int getMpsRxpowermv();
+extern int getMpsTxpowermv();
+extern int getMpsAmptemp();
+extern int getMpsFreq();
+extern int getMpsPower();
 
 static int	sethw_wait;
 static int	cur_table_entry;
@@ -1874,7 +1883,8 @@ static int return_hw_values(int retc, char *retv[] )
 {
 	const char	*param_name;
 	char	 readhw_report[ 120 ], tmpbuf[ 20 ];
-	int	 iter, ival, pval, rspace, tlen;
+        int ival  __attribute__((unused));
+	int	 iter, pval, rspace, tlen;
 
 /*  `retc' should not be less than 0, but let's be sure.  */
 
@@ -2256,6 +2266,43 @@ int readhw(int argc, char *argv[], int retc, char *retv[] )
               Winfoprintf("Sample location is %d", loc);
 	   RETURN;
         }
+        if (strcmp(argv[1],"mps") == 0)
+        {
+           double val = 0.0;
+	   if (argc != 3)
+	   {
+		Werrprintf( "Read mps hardware requires an argument" );
+		return( -1 );
+	   }
+           if (GETACQSTATUS(HostName,UserName) >= 0)
+           {
+	      if (!strcmp(argv[2],"wgstatus"))
+	         val = (double) getMpsWgstatus();
+	      if (!strcmp(argv[2],"rfstatus"))
+	         val = (double) getMpsRfstatus();
+	      if (!strcmp(argv[2],"ampstatus"))
+	         val = (double) getMpsAmpstatus();
+	      if (!strcmp(argv[2],"lockstatus"))
+	         val = (double) getMpsLockstatus();
+	      if (!strcmp(argv[2],"rxpowermv"))
+	         val = (double) getMpsRxpowermv();
+	      if (!strcmp(argv[2],"txpowermv"))
+	         val = (double) getMpsTxpowermv();
+	      if (!strcmp(argv[2],"amptemp"))
+	         val = (double) getMpsAmptemp();
+	      if (!strcmp(argv[2],"freq"))
+	         val = (double) getMpsFreq() / 1e6;
+	      if (!strcmp(argv[2],"power"))
+	         val = (double) getMpsPower() / 10.0;
+           }
+           if (retc > 0)
+           {
+              retv[ 0 ] = realString(val);
+           }
+           else
+              Winfoprintf("MPS %s is %g", argv[2], val);
+	   RETURN;
+        }
 
         if (strcmp(argv[1],"cntlrsyncfail") == 0)
         {
@@ -2384,10 +2431,11 @@ int sethw(int argc, char *argv[], int retc, char *retv[] )
            if ( ! access(path,R_OK) )
            {
                FILE *fd;
+               int ret  __attribute__((unused));
 
                strcpy(msg,"");
                fd = fopen(path,"r");
-               fscanf(fd, "%d %[^\n]\n", &res, msg);
+               ret = fscanf(fd, "%d %[^\n]\n", &res, msg);
                fclose(fd);
                unlink(path);
                if (msg[strlen(msg)-1] == '\r')
@@ -2789,7 +2837,7 @@ int is_data_present(int this_expnum )
 
 int ok_to_acquire()
 {
-	int	ival;
+        int ival  __attribute__((unused));
 	char	quick_msg[ 20 ];
 
 	if (is_acqproc_active() == 0)
@@ -3313,7 +3361,7 @@ int jacqupdt(int argc, char *argv[], int retc, char *retv[])
 {
    FILE *sd;
     int port;
-    int i,tree;
+    int tree;
     char *name;
     char portstr[50];
     char pidstr[50];
@@ -3394,9 +3442,10 @@ int jacqupdt(int argc, char *argv[], int retc, char *retv[])
    */
     if (isJpsgReady())
     {
+      int ret  __attribute__((unused));
       sprintf(jpsgPIDFileName, "/vnmr/acqqueue/jinfo1.%s", UserName);
       sd = fopen(jpsgPIDFileName,"r");
-      i = fscanf(sd,"%s %s %s %s",portstr,pidstr,hostname,readymsge);
+      ret = fscanf(sd,"%s %s %s %s",portstr,pidstr,hostname,readymsge);
       /*printf("conv: %d, port: '%s', pid: '%s', host: '%s', rdymsge: '%s'\n",
           i, portstr,pidstr,hostname,readymsge); */
       fclose(sd);
