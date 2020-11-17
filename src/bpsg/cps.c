@@ -113,7 +113,7 @@ void createPS()
 
     fprintf(psgFile,"NUMBER_POINTS %d\n",(int) (np+0.1));
 
-    if ( mpstuneflag || tuneflag )
+    if ( mpstuneflag )
     {
        pulsesequence();
        return;
@@ -169,6 +169,15 @@ void createPS()
     sendPowerVal();
     fprintf(psgFile,"PULSE_ELEMENTS START\n");
     fprintf(psgFile,"RATTN %g\n",rattn);
+    if ( tuneflag )
+    {
+       fprintf(psgFile,"PHASE_RESET 1\n");
+       initElems();
+       rlpower(tpwrf,0);
+       pulsesequence();
+       endElems();
+       return;
+    }
     if (mpspoweractive)
        fprintf(psgFile,"MPSPOWER %g\n",mpspower);
     maxPh = maxPhaseCycle();

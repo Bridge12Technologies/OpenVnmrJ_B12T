@@ -4,6 +4,7 @@
   <group size="630 190"
     style="Heading1"
     label="Probe tune"
+    vc2="mtune('stop')"
     border="None"
     side="Top"
     justify="Left"
@@ -18,30 +19,23 @@
     >
     <menu loc="360 140" size="80 20"
       style="PlainText"
-      label="# Points"
-      vc="np=$VALUE if (acqmode='mtune') then setvalue('np',np,'processed') halt('  ') endif"
-      set="$VALUE=np"
+      label="Display"
+      vq="dmg"
+      vc="$VALUE"
+      set="$VALUE=dmg"
       editable="No"
       >
       <mlabel 
-        label="128"
-        chval="128"
+        label="av"
+        chval="av"
         />
       <mlabel 
-        label="256"
-        chval="256"
+        label="pwr"
+        chval="pwr"
         />
       <mlabel 
-        label="512"
-        chval="512"
-        />
-      <mlabel 
-        label="1024"
-        chval="1024"
-        />
-      <mlabel 
-        label="2048"
-        chval="2048"
+        label="dB"
+        chval="db"
         />
     </menu>
     <entry loc="360 60" size="60 20"
@@ -54,9 +48,9 @@
       />
     <entry loc="360 90" size="60 20"
       style="PlainText"
-      vq="tupwr"
+      vq="tpwrf"
       vc="mtune('setpwr',$VALUE)"
-      set="$VALUE=tupwr"
+      set="$VALUE=tpwrf"
       digits="1"
       disable="Grayed out"
       />
@@ -152,7 +146,7 @@
       />
     <label loc="310 140" size="50 20"
       style="Label1"
-      label="# Points"
+      label="Display"
       justify="Left"
       />
     <button loc="160 160" size="40 20"
@@ -187,11 +181,6 @@
       vc="vs=vs*2 mtune('disp')"
       justify="Center"
       decor1="yes"
-      />
-    <label loc="420 90" size="40 20"
-      style="Label1"
-      label="dB"
-      justify="Left"
       />
     <label loc="10 40" size="110 20"
       style="Label1"

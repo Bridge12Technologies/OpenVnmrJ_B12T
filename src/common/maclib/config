@@ -37,9 +37,6 @@ if ($op = 'init') or ($op = 'auto') then
        endif
     endif
 
-    $file=systemdir+'/tmp/smsport'
-    write('reset',$file)
-    write('file',$file,'None n')
       numrfch=1
       rfinterface=2
       ptsval[1]=456

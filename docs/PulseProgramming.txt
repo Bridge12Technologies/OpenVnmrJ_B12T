@@ -287,18 +287,12 @@ normal values.
 B12_BoardNum - global parameter specifying the SpinCore board number.
                default is 0
 
-B12_BlankBit - global parameter specifying the SpinCore blanking bit
-               default is 2
-
 B12_BypassFIR - global parameter specifying whether to bypass the
                 SpinCore FIR filter.
                 default is 1
 
 B12_ADC - global parameter specifying the SpinCore ADC frequency
           in MHz. default is 75.0
-
-bnc - The BNC connection to use for the Microwave source.
-      default is 0
 
 mps - set the state of the MPS when the experiment starts. At the end
       of the experiment, the state of the MPS will be returned

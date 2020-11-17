@@ -54,7 +54,6 @@ vwacqHdrList = [ 'hostAcqStructs.h' ]
 fileList = ['b12proc.c',
             'b12funcs.c',
             'conf.c',
-            'mtune.c',
             'spincore.c' ]
 
 incPath = os.path.join(cwd, os.pardir, 'spinapi', 'spinapi')

@@ -9,6 +9,10 @@ extern void diagMessage(const char *format, ...);
 #define STOP 1
 #define LOOP 2
 #define END_LOOP 3
+#define WAIT 8
+
+#define STATUS_STOPPED  1
+#define STATUS_WAITING  8
 
 BOARD_INFO board[32];
 int cur_board;
@@ -67,6 +71,8 @@ int pb_inst_radio_shape(int freq, int cos_phase, int sin_phase, int tx_phase,
       strcpy(inststr,"ENDLOOP");
    else if (inst == STOP)
       strcpy(inststr,"STOP");
+   else if (inst == WAIT)
+      strcpy(inststr,"WAIT");
    else
       strcpy(inststr,"UNKNOWN");
    diagMessage("   use_shape=%d amp=%d flags=%d\n",use_shape,amp,flags);
@@ -201,7 +207,7 @@ void pb_sleep_ms(int millis)
 }
 int pb_read_status()
 {
-   int stat = 0x03;
+   int stat = STATUS_WAITING | STATUS_STOPPED;
    diagMessage("called pb_read_status\n");
    return stat;
 }

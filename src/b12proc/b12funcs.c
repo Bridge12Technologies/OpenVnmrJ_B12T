@@ -127,6 +127,14 @@ void sleepMilliSeconds(int msecs)
    nanosleep( &req, NULL);
 }
 
+void sleepMicroSeconds(int usecs)
+{
+   struct timespec req;
+   req.tv_sec = usecs / 1000000;
+   req.tv_nsec = (usecs % 1000000) * 1000;
+   nanosleep( &req, NULL);
+}
+
 void resetState()
 {
   /* close msgQs if open */

@@ -52,21 +52,13 @@
         chval="datastation"
         />
     </menu>
-    <menu loc="190 70" size="180 20"
+    <entry loc="190 70" size="180 20"
       style="PlainText"
-      vq="bnc"
-      vc="bnc=$VALUE"
-      set="$VALUE=bnc"
-      >
-      <mlabel 
-        label="BNC0"
-        chval="0"
-        />
-      <mlabel 
-        label="BNC1"
-        chval="1"
-        />
-    </menu>
+      vq="tpwrfmax"
+      vc="tpwrfmax=$VALUE"
+      set="$VALUE=tpwrfmax"
+      digits="1"
+      />
     <entry loc="190 40" size="180 20"
       style="PlainText"
       vq="lockfreq"
@@ -76,7 +68,7 @@
       />
     <label loc="10 70" size="170 20"
       style="Label1"
-      label="Microwave connection"
+      label="Power maximum for RF tune"
       />
     <label loc="10 40" size="170 20"
       style="Label1"

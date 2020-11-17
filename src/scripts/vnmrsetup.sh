@@ -208,6 +208,17 @@ EOF
 #  MAIN Main main
 #-------------------------------------------------
 
+npids=$(pgrep Expproc)
+if [[ ! -z $npids ]]; then
+   echo "Must stop acquisition communications before installing OpenVnmrJ"
+   exit 1
+fi
+npids=$(pgrep Vnmrbg)
+if [[ ! -z $npids ]]; then
+   echo "Must exit OpenVnmrJ or VnmrJ before installing new OpenVnmrJ"
+   exit 1
+fi
+
 # loop though the arguments and check for the install option key word
 # skippkgchk, NOTE this must be the first argument
 # Otherwise the user name, group and destination args will be incorrect

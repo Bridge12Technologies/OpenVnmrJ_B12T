@@ -8,6 +8,7 @@
     border="None"
     side="Top"
     justify="Left"
+    vc2="mtune('stop')"
     tab="yes"
     enable="no"
     reference="tune"

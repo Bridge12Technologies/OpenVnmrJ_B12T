@@ -23,7 +23,6 @@ extern void status(int state);
 extern void mpsTune(double freq, double width, double power);
 extern void mTune(double freq, double width);
 
-extern int bnc;
 extern void initPowerVal();
 extern void addPowerVal(double amp);
 extern void rlpower(double amp, int dev);

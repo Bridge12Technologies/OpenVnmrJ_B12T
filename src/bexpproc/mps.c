@@ -650,7 +650,7 @@ void acqMPS(int stage)
          return;
       setMpsRfstatus( rfstate );
    }
-   else if (stage == 2)  // start of MPS or RF tuning
+   else if (stage == 2)  // start of MPS tuning
    {
       if (sendMPS("rfstatus?\n"))
          return;

@@ -172,9 +172,9 @@ void status(int state)
       if (lastElem[0] != '\0')
          fprintf(psgFile,"%s\n",lastElem);
       if (state <= xmsize)
-         sprintf(lastElem,"STATUS %d %d",bnc,(xm[state]=='y') ? 1 : 0);
+         sprintf(lastElem,"STATUS %d",(xm[state]=='y') ? 1 : 0);
       else
-         sprintf(lastElem,"STATUS %d %d",bnc,(xm[xmsize-1]=='y') ? 1 : 0);
+         sprintf(lastElem,"STATUS %d",(xm[xmsize-1]=='y') ? 1 : 0);
    }
 }
 
@@ -229,9 +229,10 @@ void mTune(double freq, double width)
    dps_off();
    if (psgFile)
    {
-      fprintf(psgFile,"STATUS %d 1\n",bnc);
-      fprintf(psgFile,"MTUNE %s/mData %g %g\n", curexp, freq, width);
-      totaltime = (double) ((int) (np+0.5)) * 0.050;
+      if (lastElem[0] != '\0')
+         fprintf(psgFile,"%s\n",lastElem);
+      sprintf(lastElem,"MTUNE %g %g %g\n", freq, width, d1);
+      totaltime = (double) ((int) (np+0.5)) * 2.0 * 1e-6 + d1;
    }
    dps_on();
 }

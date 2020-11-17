@@ -488,9 +488,7 @@ int NUMch=2;			/* Number of channels configured */
 
 /* --- Bridge 12 Pulse Seq. globals --- */
 int B12_BoardNum = 0;
-int B12_BlankBit = 2;
 int B12_BypassFIR = 1;
-int bnc = 0;
 double B12_ADC = 75.0;
 
 /*------------------------------------------------------------------------
@@ -790,7 +788,6 @@ int main(int argc, char *argv[])
        if ( ! mpstuneflag )
        {
        fprintf(psgFile,"BOARD_NUMBER   %d\n",B12_BoardNum);
-       fprintf(psgFile,"BLANK_BIT      %d\n",B12_BlankBit);
        fprintf(psgFile,"BYPASS_FIR     %d\n",B12_BypassFIR);
        fprintf(psgFile,"ADC_FREQUENCY  %g\n",B12_ADC);
        }
@@ -963,10 +960,6 @@ int setGflags()
     {
        B12_BoardNum = (int) (tmpval + 0.0005);
     }
-    if ( P_getreal(GLOBAL,"BB12_BlankBit",&tmpval,1) >= 0 )
-    {
-       B12_BlankBit = (int) (tmpval + 0.0005);
-    }
     if ( P_getreal(GLOBAL,"B12_BypassFIR",&tmpval,1) >= 0 )
     {
        B12_BypassFIR = (int) (tmpval + 0.0005);
@@ -974,10 +967,6 @@ int setGflags()
     if ( P_getreal(GLOBAL,"B12_ADC",&tmpval,1) >= 0 )
     {
        B12_ADC = tmpval;
-    }
-    if ( P_getreal(GLOBAL,"bnc",&tmpval,1) >= 0 )
-    {
-       bnc = (int) (tmpval + 0.0005);
     }
     if ( P_getreal(GLOBAL,"numrfch",&tmpval,1) >= 0 )
     {

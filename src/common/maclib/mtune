@@ -7,21 +7,9 @@ if ($# > 0) then
   $action = $1
 endif
 
-"create parameters for markers"
-
-exists('marker1','parameter'):$marker
-if ($marker < 0.5) then
-  create('marker1','string')
-  create('marker2','string')
-  create('markerfrq1','real')
-  create('markerfrq2','real')
-  marker1=''
-  marker2=''
-endif
-
+if ($action = 'setup') or ($action = 'prep') then
 "create marker persistence file"
 
-if ($action = 'setup') or ($action = 'prep') then
   "Read nuclei present in probe file"
   $out=userdir+'/persistence/mtune_nuc'
   getProbePath:$e,$probe
@@ -52,13 +40,8 @@ endif
 
 "save current experiment"
 
-$hfmode='n'
 if ($action = 'setup') then
   $temp=temp $pslabel=pslabel
-  exists('hfmode','parameter','current'):$e
-  if ($e) then
-    $hfmode=hfmode
-  endif
   on('temp'):$tempon
 
   exists(curexp+'/tutmp','file'):$e
@@ -76,23 +59,24 @@ if ($action = 'setup') then
     write('error','parameters for mtune do not exist')
     return
   endif
+  "create parameters for markers"
+
+  exists('marker1','parameter'):$marker
+  if ($marker < 0.5) then
+    create('marker1','string')
+    create('marker2','string')
+    create('markerfrq1','real')
+    create('markerfrq2','real')
+    marker1=''
+    marker2=''
+  endif
+
   
   if ($tempon) then
     temp = $temp
   else
     temp = 'n'
   endif
-
-  if ($hfmode <> 'n') then
-    exists('hfmode','parameter'):$e
-    if ($e <= 0.5) then
-      create('hfmode','flag')
-      setprotect('hfmode','on',1)
-      hfmode=''
-    endif
-    hfmode=$hfmode
-  endif
-
   gain = tugain
   werr=''
   wdone=''
@@ -106,6 +90,13 @@ if ($action = 'setup') then
   alock='n'
   wshim='n'
   axis = 'h'
+  setlimit('vp',1e5,-1e5,0)
+  if tpwrf > tpwrfmax then
+    tpwrf = tpwrfmax
+  endif
+  if np > 1024 then
+    np = 1024
+  endif
 elseif ($action = 'start') then
   wbs='mtune(`process`)'
   wexp='mtune(`reset`)'
@@ -116,6 +107,8 @@ elseif ($action = 'start') then
   menu('off')
   f
 elseif ($action = 'reset') then
+  sleep(2)
+  wbs='mtune(`process`)'
   au('silent','tune')
   clear(2)
 elseif ($action = 'process') then
@@ -164,21 +157,28 @@ elseif ($action = 'getnuc') then
 elseif ($action = 'setnuc') then
   tn=$2 setvalue('tn',tn,'processed')
   if (acqmode='mtune') then
+    wbs=''
     halt(' ')
   endif
 elseif ($action = 'setfreq') then
   sfrq=$2 setvalue('sfrq',sfrq,'processed')
   if (acqmode='mtune') then
+    wbs=''
     halt(' ')
   endif
 elseif ($action = 'setspan') then
   tunesw=$2
   if (acqmode='mtune') then
+    wbs=''
     halt(' ')
   endif
 elseif ($action = 'setpwr') then
-  tupwr=$2
+  tpwrf=$2
+  if tpwrf > tpwrfmax then
+    tpwrf = tpwrfmax
+  endif
   if (acqmode='mtune') then
+    wbs=''
     halt(' ')
   endif
 elseif ($action = 'disp') then
@@ -257,13 +257,17 @@ elseif ($action = 'betweenmarkers') then
     {$0}('disp')
   endif
  
+elseif ($action = 'stop') then
+  if (acqmode='mtune') then
+    aa('Tuning Complete')
+  endif
+  acqmode=''
 
 "enable graceful quitting"
-
 elseif ($action = 'quit') then
   clear(2)
   if (acqmode='mtune') then
-    aa('Do not forget to STOP first')
+    aa('Tuning Complete')
   endif
   acqmode=''
   tmpreturn('tutmp')
