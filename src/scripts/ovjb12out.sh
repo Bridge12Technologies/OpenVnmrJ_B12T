@@ -423,6 +423,10 @@ do
       tar --exclude=.gitignore -cf - ${dir} | (cd $dest_dir_code/tmp; tar $taroption -)
 
       cd $dest_dir_code/tmp
+      if [[ $dir = "maclib" ]]; then
+         rm -f maclib/mtune_ddr
+         rm -f maclib/_sw_ddr
+      fi
       setperms ./ 755 644 755
       # tar --exclude=.gitignore -cjf $dest_dir_code/$Tarfiles/${dir}.tar *
       tarIt "--exclude=.gitignore" "$dest_dir_code/$Tarfiles/${dir}.tar" "*"
@@ -491,6 +495,10 @@ case x$dir in
        tar --exclude=.gitignore -cf - * | (cd $dest_dir_code; tar $taroption -)
        cp $gitdir/src/scripts/ins_vnmr2.sh $dest_dir_code/ins_vnmr
        chmod 755 $dest_dir_code/ins_vnmr
+       cp $gitdir/src/scripts/upgrade.nmr.sh $dest_dir/upgrade.nmr
+       chmod 755 $dest_dir/upgrade.nmr
+       cp $gitdir/Notes.txt $gitdir/README.md $dest_dir/.
+       chmod 644 $dest_dir/Notes.txt $dest_dir/README.md
        cp $gitdir/src/scripts/vjpostinstallaction.sh $dest_dir_code/vjpostinstallaction
        chmod 755 $dest_dir_code/vjpostinstallaction
        cp $gitdir/src/common/user_templates/.??* $dest_dir_code/.

@@ -54,6 +54,22 @@ This repository is used in conjunction with the [**OpenVnmrJ**](https://github.c
     config
 ````
 
+If you have built and installed OpenVnmrJ using the above procedure, you can upgrade it with the following steps.
 
+1. Fetch the latest changes into the OpenVnmrJ_B12T repository
+```
+    cd ~/ovjbuild/OpenVnmrJ_B12T
+    git pull
+```
 
+2. Build the package. The OpenVnmrJ and ovjTools repositories will automatically be updated with any changes. The build processes takes about 10 minutes.
+```
+    ./buildb12
+```
+
+3. Upgrade OpenVnmrJ. In addition to the load.nmr script, there will be an upgrade.nmr script. You may have to exit any running OpenVnmrJ sessions and stop the acquisition communication programs (acqcomm stop)
+```
+    cd ~/ovjbuild/dvdimageB12
+    ./upgrade.nmr
+```
 

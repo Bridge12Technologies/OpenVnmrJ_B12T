@@ -101,7 +101,7 @@ then
   # Step 4. Add Bridge12 components
   echo "===>>> $date Copy and Replace Bridge12 sources <<<==="
   cd $buildDir/OpenVnmrJ_B12T
-  tar cf - SConstruct src scripts | (cd $buildDir/OpenVnmrJ && tar xpf -)
+  tar cf - README.md SConstruct src scripts | (cd $buildDir/OpenVnmrJ && tar xpf -)
 
   echo "===>>> $date Build spinapi libraries first <<<==="
   $buildDir/OpenVnmrJ/src/spinapi/makespinapi
