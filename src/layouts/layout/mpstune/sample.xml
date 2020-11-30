@@ -1,18 +1,39 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 
-<template name="Setup" element="panels" type="sample" >
-  <group loc="0 0" size="630 190"
+<template name="Start" element="panels" type="sample" >
+  <group loc="0 0" size="620 240"
     style="Heading1"
     label="MPS tune"
+    border="None"
+    side="Top"
+    justify="Left"
+    vc2="mpstune('stop')"
+    tab="yes"
+    enable="no"
+    reference="mpstune"
+    useref="yes"
+    subtype="Untitled"
+    expanded="no"
+    rows="1"
+    columns="1"
+    >
+  </group>
+  <group loc="0 0" size="850 350"
+    style="Heading1"
+    label="MPS"
+    vq="system personaType customflag cppauseflg"
+    vc="sethw('mps','statrate on'):$x"
+    vc2="sethw('mps','statrate'):$x"
+    show="$S=1 PersonaManager('showInPanel','start','lock'):$S $SHOW=((system='spectrometer') and (cppauseflg='n') and (customflag='n') and ($S))"
     bg=""
     border="None"
     side="Top"
     justify="Left"
     tab="yes"
     enable="no"
-    reference="mpstune"
+    reference="Mps"
     useref="yes"
-    subtype="Untitled"
+    subtype="Basic"
     expanded="no"
     >
   </group>

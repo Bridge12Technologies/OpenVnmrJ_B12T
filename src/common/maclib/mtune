@@ -1,6 +1,4 @@
-"macro mtune_ddr"
-
-// probe tune
+"macro mtune"
 
 $action = 'setup'
 if ($# > 0) then
@@ -8,7 +6,6 @@ if ($# > 0) then
 endif
 
 if ($action = 'setup') or ($action = 'prep') then
-"create marker persistence file"
 
   "Read nuclei present in probe file"
   $out=userdir+'/persistence/mtune_nuc'
@@ -41,43 +38,20 @@ endif
 "save current experiment"
 
 if ($action = 'setup') then
-  $temp=temp $pslabel=pslabel
-  on('temp'):$tempon
-
-  exists(curexp+'/tutmp','file'):$e
-  if ($e < 0.5) then
-    tmpsave('tutmp')
-    exists(curexp+'/tmptext','file'):$e
-    if $e then rm(curexp+'/tmptext'):$x endif
-    cp(curexp+'/text',curexp+'/tmptext')
-  endif
-
   exists('mtune','parlib'):$e,$path
   if ($e) then
+    "save current experiment"
+    exists(curexp+'/tutmp','file'):$e
+    if ($e < 0.5) then
+      tmpsave('tutmp')
+    endif
+    "get tune parameters"
     rtp($path)
   else
     write('error','parameters for mtune do not exist')
     return
   endif
-  "create parameters for markers"
 
-  exists('marker1','parameter'):$marker
-  if ($marker < 0.5) then
-    create('marker1','string')
-    create('marker2','string')
-    create('markerfrq1','real')
-    create('markerfrq2','real')
-    marker1=''
-    marker2=''
-  endif
-
-  
-  if ($tempon) then
-    temp = $temp
-  else
-    temp = 'n'
-  endif
-  gain = tugain
   werr=''
   wdone=''
   in='n'
@@ -89,7 +63,6 @@ if ($action = 'setup') then
   av
   alock='n'
   wshim='n'
-  axis = 'h'
   setlimit('vp',1e5,-1e5,0)
   if tpwrf > tpwrfmax then
     tpwrf = tpwrfmax
@@ -97,80 +70,116 @@ if ($action = 'setup') then
   if np > 1024 then
     np = 1024
   endif
+  acqmode=''
+  saxis
+  fn_left=sfrq - 1e-6*tunesw/2.0
+  fn_right=sfrq + 1e-6*tunesw/2.0
+  fn_label='MHz'
+  mtune('bgname'):$e
+  if ($e) then
+    disp1=2
+    disp2=1
+    disp3=1
+  else
+    disp1=2
+    disp2=0
+    disp3=0
+  endif
 elseif ($action = 'start') then
   wbs='mtune(`process`)'
   wexp='mtune(`reset`)'
   acqmode='mtune'
   if tunesw < 0.1 then tunesw = 0.1 endif
+  $mps=mps
+  mps='manual'
   au('silent','tune')
+  mps=$mps
   clear(2)
-  menu('off')
   f
 elseif ($action = 'reset') then
   sleep(2)
   wbs='mtune(`process`)'
+  $mps=mps
+  mps='manual'
   au('silent','tune')
+  mps=$mps
   clear(2)
 elseif ($action = 'process') then
   ft('noft','fidshim','nods','nopars')
-//  dss
-//  dfs
   if (acqstatus[2] = 1) then
-//    menu('ds_1','mtune')
     clear(0) vsadj
     mfShowAxis=1
+    "draw center line"
+    write('line3','1 LINE %g -20 %g %g  |%%val%%| 0 0 256 2 0 1 integral 0 - - - 0.00',sfrq, sfrq, wc2max):$cmd
+    aspAnno('clear')
+    aspAnno('paste',$cmd)
   endif
-    dss
-    dscale('rev','MHz',0,sfrq-tunesw/2*1e-6,tunesw*1e-6)
-//    dfs
-
-"draw markers"
-
-  $mfreq=sfrq $mnuc=tn
-  
-  pen('graphics','integral')
-
-  if (marker1 <> '') and (marker1 <> 'none') then
-    $markerset1=wcmax-sc-wc/2-($mfreq-markerfrq1)/tunesw*1e6*wc
-    move($markerset1,-20)
-    draw($markerset1,wc2max)
-    write('graphics',$markerset1 +2,wc2max-10,'%s',marker1)
+  $cr=crmode
+  mspec('clear')
+  $num=0
+  if (disp3=2) then
+     aipLoadSpec(bgfile,'bg')
+     if (disp1 = 2) then
+        $num=$num+1
+        mspec($num,'SPEC:1',0,'modelSpec')
+     endif
+     if (disp2 = 2) then
+        $num=$num+1
+        mspec($num,'bg:1',1,'modelSpec')
+     endif
+     $num=$num+1
+     mspec($num,'SPEC:1-bg:1',0,'spectrum')
+  else
+     if (disp1 = 2) then
+        $num=$num+1
+        mspec($num,'SPEC:1',0,'spectrum')
+     endif
+     if (disp2 = 2) then
+        $num=$num+1
+        mspec($num,'bg:1',1,'modelSpec')
+     endif
   endif
-  if (marker2 <> '') and (marker2 <> 'none') then
-    $markerset2=wcmax-sc-wc/2-($mfreq-markerfrq2)/tunesw*1e6*wc
-    move($markerset2,-20)
-    draw($markerset2,wc2max)
-    write('graphics',$markerset2+2,wc2max-10,'%s',marker2)
+  if ($num = 0) then
+    disp1=2
   endif
-  if (marker1 = '') or (marker1 = 'none') then
-    if (tn = 'none') then $tnmark='' else $tnmark=$mnuc endif
-    move(wcmax-sc-wc/2,-20)
-    draw(wcmax-sc-wc/2,wc2max)
-    write('graphics',wcmax-sc-wc/2+2,wc2max-10,'%s',$tnmark)
+  ds
+  if ($cr = 'b') then
+    ds('toggle')
   endif
 
-
-elseif ($action = 'getfreq') then
-    return(sfrq)
-elseif ($action = 'getnuc') then
-    return(tn)
-elseif ($action = 'setnuc') then
-  tn=$2 setvalue('tn',tn,'processed')
-  if (acqmode='mtune') then
-    wbs=''
-    halt(' ')
-  endif
 elseif ($action = 'setfreq') then
   sfrq=$2 setvalue('sfrq',sfrq,'processed')
   if (acqmode='mtune') then
     wbs=''
     halt(' ')
   endif
+  fn_left=sfrq - 1e-6*tunesw/2.0
+  fn_right=sfrq + 1e-6*tunesw/2.0
+  procdim=0
+  mtune('bgname'):$e
+  if (not $e) then
+    disp2=0
+    disp3=0
+  else
+    if (disp2=0) then disp2=1 endif
+    if (disp3=0) then disp3=1 endif
+  endif
 elseif ($action = 'setspan') then
   tunesw=$2
   if (acqmode='mtune') then
     wbs=''
     halt(' ')
+  endif
+  fn_left=sfrq - 1e-6*tunesw/2.0
+  fn_right=sfrq + 1e-6*tunesw/2.0
+  procdim=0
+  mtune('bgname'):$e
+  if (not $e) then
+    disp2=0
+    disp3=0
+  else
+    if (disp2=0) then disp2=1 endif
+    if (disp3=0) then disp3=1 endif
   endif
 elseif ($action = 'setpwr') then
   tpwrf=$2
@@ -181,97 +190,84 @@ elseif ($action = 'setpwr') then
     wbs=''
     halt(' ')
   endif
-elseif ($action = 'disp') then
-     $freq = sfrq
-//  menu('ds_1','mtune')
-  clear(0)
-  mfShowAxis=1
-  dss
-//  dfs
-  if tunesw < 0.1 then tunesw = 0.1 endif
-  dscale('rev','MHz',0,$freq-tunesw/2*1e-6,tunesw*1e-6)
-//  dss
-
-"set marker1 frequency"
-
-elseif ($action = 'setmarker1') then
-  marker1=$2
-  if (marker1 <> '') and (marker1 <> 'none')  then
-      $nuc=tn
-      write('line3','tn before=%s',$nuc)
-      $freq=sfrq
-      tn=marker1
-      markerfrq1=sfrq
-      tn=$nuc 
-      write('line3','tn after=%s',$nuc)
-      sfrq=$freq
-  elseif (marker1 <> '') or (marker1 = 'none') then
-    marker1=''
-  endif
+elseif ($action = 'getfreq') then
+    return(sfrq)
+elseif ($action = 'getnuc') then
+    return(tn)
+elseif ($action = 'setnuc') then
+  tn=$2 setvalue('tn',tn,'processed')
   if (acqmode='mtune') then
-    aa('Marker1 changed')
-    mtune('start')
+    wbs=''
+    halt(' ')
   endif
-
-"set marker2 frequency"
-
-elseif ($action = 'setmarker2') then
-  marker2=$2
-  if (marker2 <> '') and (marker2 <> 'none')  then
-      $nuc=tn
-      $freq=sfrq
-      tn=marker2
-      markerfrq2=sfrq
-      tn=$nuc 
-      sfrq=$freq
-  elseif (marker2 = '') or (marker2 = 'none') then
-    marker2=''
-  endif
-  if (acqmode='mtune') then
-    aa('Marker2 changed')
-    mtune('start')
-  endif
-
-elseif ($action = 'betweenmarkers') then
-  if (marker1 <> '') and (marker1 <> 'none') and (marker2 <> '') and (marker2 <> 'none') then
-    if (markerfrq1 >= markerfrq2) then
-      $setfreq=markerfrq2+(markerfrq1-markerfrq2)/2
-      tunesw=(markerfrq1-markerfrq2)*1.15e6
-    else
-      $setfreq=markerfrq1+(markerfrq2-markerfrq1)/2
-      tunesw=(markerfrq2-markerfrq1)*1.15e6
-    endif
-    if tunesw < 0.1 then tunesw = 0.1 endif
-    sfrq=$setfreq setvalue('sfrq',sfrq,'processed')
-    if (acqmode='mtune') then
-      halt(' ')
-    endif
-//    menu('ds_1','mtune')
-//    clear(0)
-//    mfShowAxis=1
-//    ds('rev')
-//    if tunesw < 0.1 then tunesw = 0.1 endif
-//    dscale('rev','MHz',0,$setfreq-tunesw/2*1e-6,tunesw*1e-6)
+  fn_left=sfrq - 1e-6*tunesw/2.0
+  fn_right=sfrq + 1e-6*tunesw/2.0
+  procdim=0
+  mtune('bgname'):$e
+  if (not $e) then
+    disp2=0
+    disp3=0
   else
-    write('error','Two markers needed!')
-    {$0}('disp')
+    if (disp2=0) then disp2=1 endif
+    if (disp3=0) then disp3=1 endif
   endif
- 
+elseif ($action = 'defProbe') then
+  $defined=$3
+  if (probe <> '') then
+     exists(systemdir+'/probes/'+probe+'/'+probe,'file'):$e
+     if ( not $e) then
+        exists(userdir+'/probes/'+probe+'/'+probe,'file'):$e
+     endif
+     if ($e) then $defined=$2 else $defined=$3 endif
+  endif
+  return($defined)
+
+elseif ($action = 'bgname') then
+  write('line3','tune_%1.2f_%1.1f.fdf',sfrq,tunesw*1e-6):$name
+  $file=systemdir+'/probes/'+probe+'/'+probe
+  exists($file,'file','rw'):$e
+  if (not $e) then
+    $file=userdir+'/probes/'+probe+'/'+$name
+    exists($file,'file'):$e
+  else
+    $file=systemdir+'/probes/'+probe+'/'+$name
+    exists($file,'file','rw'):$e
+  endif
+  bgfile=$file
+  return($e)
+
+elseif ($action = 'savebg') then
+  mtune('bgname'):$e
+  if ($e) then
+    delete(bgfile,''):$e
+  endif
+  savefdfspec(bgfile):$e
+  write('line3','Background scan saved for frequency %1.2f and span %1.1f',
+         sfrq, tunesw*1e-6)
+  if (disp2=0) then disp2=1 endif
+  if (disp3=0) then disp3=1 endif
+
 elseif ($action = 'stop') then
   if (acqmode='mtune') then
     aa('Tuning Complete')
   endif
   acqmode=''
 
-"enable graceful quitting"
 elseif ($action = 'quit') then
+  mspec('clear')
+  aspAnno('clear')
   clear(2)
   if (acqmode='mtune') then
     aa('Tuning Complete')
   endif
   acqmode=''
   tmpreturn('tutmp')
-  cp(curexp+'/tmptext',curexp+'/text')
+  exists('acqstatus','parameter'):$e
+  if (not $e) then
+    // This keeps cpreact from complaining
+    create('acqstatus','integer')
+    setprotect('acqstatus','on',256)
+  endif
+  acqstatus=16,102
   newdg dg
-  return
 endif

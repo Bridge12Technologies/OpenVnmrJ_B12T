@@ -24,5 +24,6 @@ extern void mpsPower(int power);
 extern int  mpsDataPt(int freq, int ms);
 extern void mpsTuneData(int init, char *outfile0, int msec, int np0);
 extern void defaultStatrateMPS(void);
+extern void errorMpsRfstat(char *msg);
 
 #endif

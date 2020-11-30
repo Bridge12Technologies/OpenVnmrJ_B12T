@@ -687,14 +687,16 @@ void mpsTuneData(int init, char *outfile0, int usec,
 		 int np0)
 {
    static int np;
+#ifdef XXX
    static int fstart;
    static double fincr;
+   static int index = 0;
+   int mv;
+#endif
    static FILE *outFD = NULL;
    static char outfile[256];
-   static int index = 0;
    char outfile2[256];
    char msg[128];
-   int mv;
 
    if (init == 0)  // initialization
    {
@@ -703,12 +705,12 @@ void mpsTuneData(int init, char *outfile0, int usec,
 //      fstart = fstart0;
 //      fincr = fincr0;
       strcpy(outfile,outfile0);
-      index = 0;
 //      strcpy(outfile2,outfile);
 //      strcat(outfile2,".tmp");
       acqMPS(2);
       sleepMilliSeconds(10);
 #ifdef XXX
+      index = 0;
       if (outFD != NULL)
          fclose(outFD);
       if ( (outFD = fopen(outfile2,"w")) == NULL)
@@ -738,7 +740,9 @@ void mpsTuneData(int init, char *outfile0, int usec,
    }
    else if (init == 1)  // collect tune data
    {
+#ifdef XXX
       int freq;
+#endif
 
       DPRINT(1,"mpsTuneData data phase\n");
       strcpy(outfile2,outfile);
@@ -747,16 +751,16 @@ void mpsTuneData(int init, char *outfile0, int usec,
          fclose(outFD);
       if ( (outFD = fopen(outfile2,"w")) == NULL)
       {
-	 DPRINT2(1,"Failed to open %s err= %s\n",outfile2, strerror(errno));
+	     DPRINT2(1,"Failed to open %s err= %s\n",outfile2, strerror(errno));
          return;
       }
       recvTuneMPS(outFD);
-         strcpy(outfile2,outfile);
-         strcat(outfile2,".tmp");
-         fclose(outFD);
-	 outFD = NULL;
-         chmod(outfile2, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
-         rename(outfile2,outfile);
+      strcpy(outfile2,outfile);
+      strcat(outfile2,".tmp");
+      fclose(outFD);
+	  outFD = NULL;
+      chmod(outfile2, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
+      rename(outfile2,outfile);
 #ifdef XXX
       DPRINT1(1,"mpsTuneData index= %d\n",index);
       sendMPS("rxpowermv?\n");
@@ -778,7 +782,7 @@ void mpsTuneData(int init, char *outfile0, int usec,
          strcpy(outfile2,outfile);
          strcat(outfile2,".tmp");
          fclose(outFD);
-	 outFD = NULL;
+	     outFD = NULL;
          chmod(outfile2, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
          rename(outfile2,outfile);
 //         if ( ! link(outfile2,outfile))
@@ -806,4 +810,18 @@ void mpsTuneData(int init, char *outfile0, int usec,
          unlink(outfile2);
       }
    }
+}
+
+// Called when trying to turn on rf when wg is in EPR mode
+// Need to uncheck the panel items.
+void errorMpsRfstat(char *msg)
+{
+    if ( ! strcmp(msg,"rfstatus 1\n") )
+        setMpsRfstatus(1);
+    else
+        setMpsRfstatus(2);
+    sigInfoproc();
+    sleepMilliSeconds(50);
+    setMpsRfstatus(0);
+    sigInfoproc();
 }

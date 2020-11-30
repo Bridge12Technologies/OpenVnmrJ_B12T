@@ -1,19 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 
 <template name="Acquire" element="panels" type="acquisition" >
-  <group loc="0 0" size="630 190"
+  <group loc="0 0" size="620 240"
     style="Heading1"
     label="MPS tune"
-    bg=""
     border="None"
     side="Top"
     justify="Left"
+    vc2="mpstune('stop')"
     tab="yes"
     enable="no"
     reference="mpstune"
     useref="yes"
     subtype="Untitled"
     expanded="no"
+    rows="1"
+    columns="1"
     >
   </group>
 </template>

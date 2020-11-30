@@ -143,7 +143,7 @@ sysgcoil 2 2 8 0 0 2 1 0 1 64
 syn 4 2 4 0 0 2 1 1 1 64
 1 "yyy"
 2 "n" "y" 
-tpwrfmax 1 1 100 -1 0 2 1 0 1 64
+tpwrfmax 1 1 100 0 0 2 1 0 1 64
 1 100
 0
 vtezscale 7 1 2 1 0 2 1 1 1 64

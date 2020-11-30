@@ -555,10 +555,6 @@ int ipccontst(char *argv)
 
 int chkExpQ(char *argstr)
 {
-  MSG_Q_ID pRcvMsgQ, pSndMsgQ;
-  char msge[CONSOLE_MSGE_SIZE];
-  char recvmsg[128];
-  char sndmsge[128];
   char msgestr[256];
   char ExpN[25];
   int totalq;
@@ -1991,20 +1987,6 @@ isThereInteractiveAccess()
 	return( 0 );
 }
 
-/*  The transparent command uses this program  */
-
-static int
-verifyNoAccessConflict( const authRecord *requesting )
-{
-	int	iter;
-
-	for (iter = 0; iter < NUMBER_OF_LEVELS; iter++)
-	 if (verifyInteractAccess( requesting, accessLevel[ iter ]) == 0)
-	  return( 0 );
-
-	return( 1 );
-}
-
 /*  end of programs to assist with the console access authorization scheme.  */
 
 
@@ -2315,11 +2297,10 @@ int releaseConsole(char *args)
 int mpsCmd(char *args)
 {
    char *returnInterface;
-   char *authInfo;
+   char *authInfo __attribute__((unused));
    char *token;
    char msg[256];
    char outfile[256];
-   int msg_len, tlen;
    int ret = 0;
 
    returnInterface = strtok( NULL, "\n" );
@@ -2382,7 +2363,26 @@ int mpsCmd(char *args)
       DPRINT1(1, "EXPPROC RECEIVED MPS outfile %s\n", outfile);
       DPRINT1(1, "EXPPROC RECEIVED MPS MESSAGE %s", msg);
 
-      ret = sendMPS(msg);
+      if ( ! strcmp(msg,"rfstatus 1\n") || ! strcmp(msg,"rfstatus 2\n") )
+      {
+          // Cannot turn on RF if not in DNP mode
+          if ( ! getMpsWgstatus() )
+          {
+              DPRINT(1, "WGSTATUS is in EPR mode\n");
+              errorMpsRfstat(msg);
+              ret = 0;
+          }
+          else
+             ret = sendMPS(msg);
+      }
+      else if ( ! strcmp(msg,"rfstatus 0\n") && ! getMpsRfstatus() )
+      {
+         DPRINT(1, "RFSTATUS was already off\n");
+         errorMpsRfstat(msg);
+         ret = 0;
+      }
+      else
+         ret = sendMPS(msg);
    }
    if (ret)
    {
@@ -2406,6 +2406,7 @@ int mpsCmd(char *args)
       FILE *outFD;
       char outfile2[256];
 
+      DPRINT1(1, "MSG for outfile '%s'", msg);
       strcpy(outfile2,outfile);
       strcat(outfile2,".tmp");
       if ( (outFD = fopen(outfile2,"w")) )
@@ -2437,6 +2438,7 @@ int mpsCntrl(char *args)  // called from B12proc. No returnInterface
       power = (int) (atof(strtok( NULL, "\n" )) *10.0 + 0.1);
       mpsPower(power);
    }
+   return(0);
 }
 
 int mpsData(char *args)
@@ -2446,13 +2448,9 @@ int mpsData(char *args)
    int freq;
    int width;
    int usec;
-   int fstart;
-   double fincr;
    int power;
-   int msg_len, tlen;
-   int ret = 0;
+   int ret __attribute__((unused));
    int np;
-   int index;
 
    setStatAcqState( ACQ_TUNING );
    sigInfoproc();
@@ -2494,7 +2492,7 @@ int tuneData(char *args)
    static char outfile[256];
    static int index =0;
    int stage;
-   int ret;
+   int ret __attribute__((unused));
    int np;
    int data;
 
@@ -2529,6 +2527,7 @@ int tuneData(char *args)
       chmod(outfile, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
    }
    sigB12proc();
+   return(0);
 }
 /* sethw */
 /* place after the Interactive Access declaration, so it can consult it  */
@@ -2536,16 +2535,19 @@ int tuneData(char *args)
 int acqHwSet(char *args)
 {
 	char		*returnInterface;
-	char		*userName, *hostName, *authInfo;
+	char		*authInfo __attribute__((unused));
+#ifdef XXX
+	char		*userName, *hostName;
 	char		*token;
 	char		 console_msg[ CONSOLE_MSGE_SIZE ];
 	char		 toke[ CONSOLE_MSGE_SIZE ];
-        int              masToke = 0;
-        int              numTokes, tok1, tok2, tok3, tok4;
+    int              masToke = 0;
+    int              numTokes, tok1, tok2, tok3, tok4;
 	char		 delimiter_2[ 2 ];
 	int		 console_len, granted, thisPid, tlen;
 	authRecord	 requester;
-        struct timespec timer;
+    struct timespec timer;
+#endif
 
 
 	returnInterface = strtok( NULL, "\n" );
@@ -2554,6 +2556,7 @@ int acqHwSet(char *args)
 	deliverMessage( returnInterface, "DOWN" );
 	return 0;
 
+#ifdef XXX
 #ifdef DEBUG
         if ( returnInterface != NULL) {
 		DPRINT1(1, "acqHwSet: returnInterface - '%s' \n", returnInterface );
@@ -2685,6 +2688,7 @@ int acqHwSet(char *args)
         nanosleep(&timer, NULL);
 	deliverMessage( returnInterface, "started" );
 	return 0;
+#endif
 }
 
 static int
