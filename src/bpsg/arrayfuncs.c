@@ -911,6 +911,7 @@ void initglobalptrs()
    initglblstruc(index++, "tpwr", &tpwr, 0L);
       initglblstruc(index++, "tpwrf", &tpwrf, 0L);
       initglblstruc(index++, "mpspower", &mpspower, 0L);
+      initglblstruc(index++, "rattn", &rattn, 0L);
    initglblstruc(index++, "phase", 0L, func4phase1);
    initglblstruc(index++, "phase2", 0L, func4phase2);
    initglblstruc(index++, "phase3", 0L, func4phase3);

@@ -1029,19 +1029,19 @@ int updatestatscrn(AcqStatBlock *statblock)
             disp_string(mpsRfOff,"1");
             disp_string(mpsRfOn,"0");
             disp_string(mpsRfExt,"0");
-	}
-	else if (CurrentStatBlock.AcqSpinSpan == 1)
+	    }
+	    else if (CurrentStatBlock.AcqSpinSpan == 1)
         {
             disp_string(mpsRfOff,"0");
             disp_string(mpsRfOn,"1");
             disp_string(mpsRfExt,"0");
-	}
-	else
+	    }
+	    else
         {
             disp_string(mpsRfOff,"0");
             disp_string(mpsRfOn,"0");
             disp_string(mpsRfExt,"1");
-	}
+	    }
     }
 
     if (CurrentStatBlock.AcqSpinAdj != statblock->AcqSpinAdj)

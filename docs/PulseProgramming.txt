@@ -592,16 +592,51 @@ PULSEPROG_DONE 2                      "Finish acodes for FID 2"
 ACODE interpretation
 ====================
 
-When the go command is executed, it generates the acode file as described above and a second
-file used by "the procs" to handle experiment queueing and monitoring. When the controlling
-Expproc determines that it is time to start an experiment, it checks its queue and starts
-B12proc, passing the name of the acode file to use. The B12proc progrm reads the acode file line by line.
-Each keyword causes some action. Some keywords, such as BOARD_NUMBER, BLANK_BIT, BYPASS_FIR,
-ADC_FREQUENCY, FILE, NUMBER_POINTS, NUMBER_OF_SCANS, SPECTRAL_WIDTH, and POWER just set parameters.
-Other keywords cause SpinCore elements to be executed. The PULSEPROG_START acode causes the SpinCore
-initialization functions to be called. It also initializes the internal current transient (ct)
-counter. The PULSE_ELEMENTS acode calls the pb_start_programming(PULSE_PROGRAM) SpinCore function.
-The PULSEPROG_DONE acode calls the pb_stop_programming() function and also uses the pb_get_data()
-function to collect the data from the SpinCore board and save it to a file defined by the FILE
-keyword. Other keywords, such as DELAY, PULSE, and ACQUIRE cause appropriate pb_inst_radio_shape()
+When the go command is executed, it generates the acode file as described
+above and a second file used by "the procs" to handle experiment queueing
+and monitoring. When the controlling Expproc determines that it is time
+to start an experiment, it checks its queue and starts B12proc, passing the
+name of the acode file to use. The B12proc progrm reads the acode file
+line by line.  Each keyword causes some action. Some keywords, such as
+BOARD_NUMBER, BLANK_BIT, BYPASS_FIR, ADC_FREQUENCY, FILE, NUMBER_POINTS,
+NUMBER_OF_SCANS, SPECTRAL_WIDTH, and POWER just set parameters.
+Other keywords cause SpinCore elements to be executed. The PULSEPROG_START
+acode causes the SpinCore initialization functions to be called. It also
+initializes the internal current transient (ct) counter. The PULSE_ELEMENTS
+acode calls the pb_start_programming(PULSE_PROGRAM) SpinCore function.
+The PULSEPROG_DONE acode calls the pb_stop_programming() function and also
+uses the pb_get_data() function to collect the data from the SpinCore
+board and save it to a file defined by the FILE keyword. Other keywords,
+such as DELAY, PULSE, and ACQUIRE cause appropriate pb_inst_radio_shape()
 functions to be called .
+
+Hardware control
+================
+
+The SpinCore board has four TTL lines, named Flag0 to Flag3. They have been
+assigned the following functions.
+
+Flag0: Trigger line to the MPS if the "mps" parameter is set to "ext"
+       It is triggered by the status pulse element when the xm parameter
+       for that status period is 'y'.
+
+Flag1: This controls the receiver unblanking. It goes high after the alfa
+       delay when the SpinCore board is triggered to start data acquisition.
+
+Flag2: This controls the amplifier unblanking. It goes high at the beginning
+       of the rof1 delay prior to turning on the RF. It goes low after the
+       RF is turned off.
+
+Flag3: The controls setting the system into tune mode for RF turning.
+       It goes high at the beginning of the "mtune" process and goes low
+       when "mtune" completes. There is a delay of d1 duration prior to
+       the start of the RF tuning process where Flag3 is also high. This
+       gives the system time to switch into tune mode.
+
+
+The "receiver attenuator" is a USB device controlled by the
+/vnmr/bin/mcl_RUDAT command. The range of values is 0 to 120 in 0.25 steps.
+One can set the attenuator directly from a terminal with the command
+/vnmr/bin/mcl_RUDAT <value>
+The attenuator is controlled from a pulse sequence with the rattn parameter.
+

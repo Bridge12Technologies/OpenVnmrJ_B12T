@@ -257,9 +257,6 @@ int configSystem(Globals *globals)
    pb_set_defaults ();
    pb_core_clock (globals->adc_frequency);
 	
-   pb_overflow (1, 0);		//Reset the overflow counters
-   pb_scan_count (1);		//Reset scan counter
-
    // Load the shape parameters
    float shape_data[1024];
 
@@ -283,6 +280,9 @@ int configExp(Globals *globals, Exps *exps)
    diagMessage("actual_sw %g adc=%g decimate=%d at=%g\n",
                   exps->actual_sw, globals->adc_frequency,
                   exps->dec_amount, exps->at);
+
+   pb_overflow (1, 0);		//Reset the overflow counters
+   pb_scan_count (1);		//Reset scan counter
 
    pb_set_num_points(globals->complex_points);
    pb_set_scan_segments(1);
@@ -768,6 +768,7 @@ int main (int argc, char *argv[])
             int aborted;
             int incr;
 	        int loops;
+            int resetTTL;
 
             //Reset scan counter to avoid time averaging
             pb_scan_count (1);
@@ -837,13 +838,30 @@ int main (int argc, char *argv[])
                pb_start();
                incr++;
             }
+
+            resetTTL = 0;
             if (aborted)
             {
                abortExp( & (globals.InfoFile[0]), globals.CodePath, 1, 1);
+               resetTTL = 1;
+            }
+            else if (getData( &globals, &exps))
+            {
+               resetTTL = 1;
+            }
+            if (resetTTL)
+            {
+               pb_start_programming (PULSE_PROGRAM);
+               pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
+                  TX_DISABLE, NO_PHASE_RESET,
+                  NO_TRIGGER, NO_SHAPE, AMP0,
+		          0,
+                  STOP, NO_DATA, MIN_DELAY);
+               pb_stop_programming();
+               pb_reset();
+               pb_start();
                break;
             }
-            if (getData( &globals, &exps))
-               break;
             diagMessage("save MTUNE data\n");
 	        saveBsData( globals.real, globals.imag,
                       &(globals.InfoFile[0]), ct);
