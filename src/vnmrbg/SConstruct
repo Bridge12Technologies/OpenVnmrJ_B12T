@@ -58,7 +58,7 @@ if (platform=="darwin"):
     compileFlag = "-arch x86_64"
     compileOption = ""
 else:
-    compileFlag = "-m64"
+    compileFlag = "-m32"
     compileOption = "-DHAVE_LARGEFILE_SUPPORT -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE"
 
 compileLinuxDir = "linux"
@@ -662,6 +662,12 @@ else:
    vnmrBgCppEnv = vnmrBgCEnv.Clone(CC         = 'g++',
                                CCFLAG = '',
                                CPPDEFINES = ['LINUX', 'VNMRJ'])
+
+if (platform=="darwin"):
+    vnmrBgCppEnv.Append(CPPDEFINES = 'boost=std')
+
+if os.path.exists("/etc/lsb-release"):
+    vnmrBgCppEnv.Append(CPPDEFINES = 'boost=std')
 
 if (opensource=="true"):
     if (gplsource=="true"):
