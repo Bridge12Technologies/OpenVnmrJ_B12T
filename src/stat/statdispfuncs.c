@@ -35,6 +35,8 @@
 #define REGULATED 1
 #define NOTREG 2
 #define NOTPRESENT 3
+#define MPSON 4
+#define MPSEXT 5
 #define ON 1
 #define GATED 2
 #define HIDE 0
@@ -48,6 +50,7 @@ static int VTstat = 3;
 static float LockPercent = 0.0;
 static float Locklevel = -1.0;
 static int infoState = 0;
+static int mpsStatus = OFF;
 
 extern  AcqStatBlock  CurrentStatBlock;
 extern int acq_ok;
@@ -1005,6 +1008,8 @@ int updatestatscrn(AcqStatBlock *statblock)
             buf[0]=0;
         disp_string(mpsRxMv,buf);
         disp_string(SPNVal,buf);
+        if (firsttime)
+           disp_string(SPNVal2,"0.0");
     }
 
     if (CurrentStatBlock.AcqSpinSpeedLimit != statblock->AcqSpinSpeedLimit)
@@ -1024,24 +1029,28 @@ int updatestatscrn(AcqStatBlock *statblock)
         char buf[20];
 
         CurrentStatBlock.AcqSpinSpan = statblock->AcqSpinSpan;
+        CurrentStatBlock.AcqLSDV = ~statblock->AcqLSDV;
         if (CurrentStatBlock.AcqSpinSpan == 0)
         {
             disp_string(mpsRfOff,"1");
             disp_string(mpsRfOn,"0");
             disp_string(mpsRfExt,"0");
-	    }
-	    else if (CurrentStatBlock.AcqSpinSpan == 1)
+            mpsStatus = OFF;
+	}
+	else if (CurrentStatBlock.AcqSpinSpan == 1)
         {
             disp_string(mpsRfOff,"0");
             disp_string(mpsRfOn,"1");
             disp_string(mpsRfExt,"0");
-	    }
-	    else
+            mpsStatus = MPSON;
+	}
+	else
         {
             disp_string(mpsRfOff,"0");
             disp_string(mpsRfOn,"0");
             disp_string(mpsRfExt,"1");
-	    }
+            mpsStatus = MPSEXT;
+	}
     }
 
     if (CurrentStatBlock.AcqSpinAdj != statblock->AcqSpinAdj)
@@ -1056,6 +1065,7 @@ int updatestatscrn(AcqStatBlock *statblock)
             disp_string(mpsRfOff,"1");
             disp_string(mpsRfOn,"0");
             disp_string(mpsRfExt,"0");
+            mpsStatus = OFF;
 	}
 	else
         {
@@ -1516,6 +1526,7 @@ void showLSDV()
     }
 
     stat = (status >> 4) & 0x0003;
+    stat = mpsStatus;
     if (debug)
         fprintf(stderr,"Spinstate = 0x%x\n",stat);
     if (Spinstat != stat)
@@ -1660,6 +1671,12 @@ static void getstatmode(int bits, char *msgeptr)
                         break;
         case NOTPRESENT:
                         strcpy(msgeptr,"NotPresent");
+                        break;
+        case MPSON:
+                        strcpy(msgeptr,"On");
+                        break;
+        case MPSEXT:
+                        strcpy(msgeptr,"EXT");
                         break;
         default:
                         *msgeptr = 0;
