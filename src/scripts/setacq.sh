@@ -14,36 +14,6 @@
 SCRIPT=$(basename "$0")
 vnmrsystem="/vnmr"
 
-stop_program () {
-  npids=$(ps -e  | grep $1 | awk '{ printf("%d ",$1) }')
-  if [[ ! -z "$npids" ]] ; then
-     echo "Stopping $1 program..."
-  fi
-  for prog_pid in $npids
-  do
-    kill -2 $prog_pid
-    sleep 5             # give time for kill message to show up.
-  done
-  # test to be sure the program died, if still running try kill -9
-  npids=$(ps -e  | grep $1 | awk '{ printf("%d ",$1) }')
-  if (test x"$npids" != "x" )
-  then   
-    for prog_pid in $npids
-    do   
-       kill -9 $prog_pid
-       sleep 5          # give time for kill message to show up.
-    done
-    # Once again double check to see if any are still running.
-    npids=$(ps -e  | grep $1 | awk '{ printf("%d ",$1) }')
-    if [[ x"$npids" != "x" ]] ; then
-      for prog_pid in $npids
-      do 
-        echo "Unable to kill '$1' (pid=$prog_pid)"
-      done
-    fi
-  fi
-}
-
 #  MAIN Main main
 #----------------------------
 if [[ ! x$(uname -s) = "xLinux" ]] ; then
@@ -104,11 +74,10 @@ logfile=${vnmrsystem}/adm/log/setacq_$postfix
 echo "Log file is $logfile"
 
 #-----------------------------------------------------------------
-# Check if the Expproc is still running. If so run 
-# ${vnmrsystem}/execkillacqproc,  afterall, we are already root.
+# Check if the Expproc is still running. If so stop it
 #-----------------------------------------------------------------
-npids=$(ps -e  | grep Expproc | awk '{ printf("%d ",$1) }')
-if [[ x"$npids" != "x" ]] ; then 
+npids=$(pgrep Expproc)
+if [[ ! -z $npids ]] ; then 
    ${vnmrsystem}/acqbin/startStopProcs
 fi
 
@@ -130,18 +99,19 @@ fi
 # Arrange for procs to start at system bootup
 #-----------------------------------------------------------------
 rm -f /etc/init.d/rc.vnmr
-cp -p $vnmrsystem/acqbin/rc.vnmr /etc/init.d
-chmod +x /etc/init.d/rc.vnmr
-chown root:root /etc/init.d/rc.vnmr
-(cd /etc/rc5.d; if [ ! -h S99rc.vnmr ]; then 
-    ln -s ../init.d/rc.vnmr S99rc.vnmr; fi)
-(cd /etc/rc0.d; if [ ! -h K99rc.vnmr ]; then
-    ln -s ../init.d/rc.vnmr K99rc.vnmr; fi)
-touch $vnmrsystem/acqbin/acqpresent
-rm -f /lib/systemd/system/vnmr.service
-cp $vnmrsystem/acqbin/vnmr.service /lib/systemd/system/.
-chmod 644 /lib/systemd/system/vnmr.service
+
+sysdDir=$(pkg-config systemd --variable=systemdsystemunitdir)
+rm -f $sysdDir/vnmr.service
+cp $vnmrsystem/acqbin/vnmr.service $sysdDir/.
+chmod 644 $sysdDir/vnmr.service
+systemctl enable --quiet vnmr.service
 systemctl daemon-reload
+
+touch $vnmrsystem/acqbin/acqpresent
+owner=$(ls -l $vnmrsystem/vnmrrev | awk '{ printf($3) }')
+group=$(ls -l $vnmrsystem/vnmrrev | awk '{ printf($4) }')
+chown $owner:$group $vnmrsystem/acqbin/acqpresent
+chmod 644 $vnmrsystem/acqbin/acqpresent
 
 #-----------------------------------------------------------------
 # Remove some files (Queues) NOT IPC_V_SEM_DBM
@@ -149,10 +119,10 @@ systemctl daemon-reload
 #-----------------------------------------------------------------
 rm -f /tmp/ExpQs
 rm -f /tmp/ExpActiveQ
-rm -f /tmp/ExpStatus
 rm -f /tmp/msgQKeyDbm
 rm -f /tmp/ProcQs
 rm -f /tmp/ActiveQ
+rm -f /vnmr/acqqueue/ExpStatus
 
 export vnmrsystem
 #  ${vnmrsystem}/bin/makesuacqproc silent
