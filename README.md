@@ -30,7 +30,7 @@ This repository is used in conjunction with the [**OpenVnmrJ**](https://github.c
 ```
 6. Success of the build process can be checked with the ```whatsin``` script.
 ```
-    ./whatsin <path_to_log_file>
+    ./whatsin
 ```
 
 7. Optional step to package OpenVnmrJ for distribution. The actual name of the zip file is selectable.
@@ -64,6 +64,7 @@ If you have built and installed OpenVnmrJ using the above procedure, you can upg
 
 2. Build the package. The OpenVnmrJ and ovjTools repositories will automatically be updated with any changes. The build processes takes about 10 minutes.
 ```
+    cd ~/ovjbuild/OpenVnmrJ_B12T/bin
     ./buildb12
 ```
 

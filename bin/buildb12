@@ -85,6 +85,8 @@ then
    mkdir -p "${ovjBuildDir}/logs"
 fi
 ovjLogFile="${ovjBuildDir}/logs/makeovj.$date"
+rm -f "${ovjBuildDir}/logs/makeovjlog"
+(cd ${ovjBuildDir}/logs && ln -s makeovj.$date makeovjlog)
 echo "log file is $ovjLogFile"
 echo "You can monitor the build with the command"
 echo "tail -f $ovjLogFile"
