@@ -19,6 +19,8 @@
 
 #define MAXPATHL 128
 
+extern int rfSweepDwell;
+
 /* Used by locksys.c  routines from vnmr */
 char systemdir[MAXPATHL];       /* vnmr system directory */
  
@@ -104,6 +106,7 @@ int startAutoproc(char *autodir, char *autoDoneQ)  /* if not started then start 
 int startB12proc(char *codefile)
 {
    char testpath[512];
+   char dwell[32];
    int ret;
 
    DPRINT1(1,"startB12proc: Test Access for: %s\n", taskList[B12PROC].procPath);
@@ -119,6 +122,7 @@ int startB12proc(char *codefile)
    DPRINT1(1,"startB12proc - Start: %s\n", taskList[B12PROC].procName);
     strcpy(testpath,systemdir);
     strcat(testpath,taskList[B12PROC].procPath);
+    sprintf(dwell, "%d", rfSweepDwell);
     child = fork();
     if (child != 0)     
     {
@@ -127,10 +131,14 @@ int startB12proc(char *codefile)
     }
     else
     {
-        ret = execl(testpath, taskList[B12PROC].procName, codefile,NULL);
+        // null string after dwell is to avoid a special case of
+        // argc == 3 in B12proc
+        ret = execl(testpath, taskList[B12PROC].procName, codefile,
+                    dwell, "",  (char *) NULL);
         errLogSysQuit(ErrLogOp,debugInfo,"Task: '%s' execl failed..", 
 		taskList[B12PROC].procName);
     }
+    return(0);
 }
 
 static void startTasks()
@@ -306,18 +314,6 @@ void sigInfoproc()
       if (kill(taskList[INFOPROC].taskPid,SIGUSR2) == 0)
       {
     	DPRINT(2,"Signal to Inforproc suceeded.\n");
-      }
-   }
-}
-
-void sigB12proc()
-{
-   if (taskList[B12PROC].taskPid != -1)
-   {
-      /* abort sendproc transfer */
-      if (kill(taskList[B12PROC].taskPid,SIGUSR2) == 0)
-      {
-    	DPRINT(2,"Signal to B12proc suceeded.\n");
       }
    }
 }

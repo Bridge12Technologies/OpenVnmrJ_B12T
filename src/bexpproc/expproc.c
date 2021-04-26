@@ -41,6 +41,7 @@ extern void clearMsgQ(void);
 extern int initApplSocket(void);
 extern void restartTasks(void);
 extern void wrtacqinfo2(void);
+extern void getRfSweepDelay();
 
 MSG_Q_ID pRecvMsgQ;
 
@@ -159,6 +160,7 @@ int main(int argc, char *argv[])
    }
    unlink("/vnmr/acqqueue/infoReady");
    defaultStatrateMPS();
+   getRfSweepDelay();
    sigInfoproc();
    asyncMainLoop();
 

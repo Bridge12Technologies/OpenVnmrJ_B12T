@@ -19,7 +19,7 @@ extern void sleepMilliSeconds(int msecs);
 extern void sleepMicroSeconds(int usecs);
 extern void endComm();
 extern void requestMpsData(double freq, double width, double power,
-	        double del, char *dataPath, char *infoPath );
+	        char *dataPath, char *infoPath );
 extern void saveBsData( int *real, int *imag, char *infoPath, int ct);
 extern void endMpsData();
 extern void sendExpMsg(char *cmd);
@@ -388,13 +388,13 @@ void resetExp(int pbRes, Exps *exps)
    exps->opCodeData = NO_DATA;
 }
 
-int getMpsData(double del, char *path,  Globals *globals, Exps *exps)
+int getMpsData(int del, char *path,  Globals *globals, Exps *exps)
 {
    int msec;
    int count;
 
-   // del is in sec
-   msec = (int) (del * (double) globals->complex_points * 1000.0) + 100;
+   // del is in msec
+   msec = (del * globals->complex_points) + 100;
    count = msec / 100;
    diagMessage("start getMPS wait %d ms\n", count * 100);
    // wait for tuning to start
@@ -875,35 +875,35 @@ int main (int argc, char *argv[])
          double freq;
          double width;
          double power;
-         double del;
+         int del;
          char dataPath[512];
-	 int doEndCall = 1;
-	 int ct = 1;
+	     int doEndCall = 1;
+	     int ct = 1;
 
          sscanf(r->vals,"%s %lg %lg %lg", dataPath,
 			 &freq, &width, &power);
-	 del = 0.01; // dwell time between tune points in sec (10 msec)
+         del = atoi(argv[2]);
          diagMessage("start MPSTUNE\n");
-	 memset ((void *) globals.imag, 0,
+	     memset ((void *) globals.imag, 0,
 			  sizeof(int) * globals.complex_points );
-	 unlink(dataPath);
-	 while ( 1 == 1)
+	     unlink(dataPath);
+	     while ( 1 == 1)
          {
-            requestMpsData( freq, width, power, del, dataPath,
+            requestMpsData( freq, width, power, dataPath,
                             &(globals.InfoFile[0]));
-	    diagMessage("call getMPS\n");
+	        diagMessage("call getMPS\n");
             if (getMpsData( del, dataPath, &globals, &exps ) )
-	    {
-	       doEndCall = 0;
+	        {
+	           doEndCall = 0;
                break;
-	    }
+	        }
             diagMessage("save MPSTUNE data\n");
-	    saveBsData( globals.real, globals.imag,
+	        saveBsData( globals.real, globals.imag,
                       &(globals.InfoFile[0]), ct);
-	    ct = 2;
-	 }
-	 if (doEndCall)
-	    endMpsData();
+	        ct = 2;
+	     }
+	     if (doEndCall)
+	        endMpsData();
          diagMessage("end MPSTUNE\n");
       }     
       r = r->next;

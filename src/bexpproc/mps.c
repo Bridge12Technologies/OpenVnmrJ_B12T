@@ -41,17 +41,22 @@ extern int setRtimer(double timsec, double interval);
 extern void sigInfoproc();
 
 void statusMPS(void);
-void mpsTuneData(int init, char *outfile0, int msec,
-		 int np0);
+void mpsTuneData(int init, char *outfile0, int np0);
 
 static int mpsFD = -1;
 static int statusInterval;
 static int statTuneFlag;
+int rfSweepDwell = 100;
 int mpsCmdOk = 0;
 
 int  getStatrateMPS()
 {
    return(statusInterval);
+}
+
+int  getTuneFlag()
+{
+   return(statTuneFlag);
 }
 
 void statusCheckMPS(int sig)
@@ -64,7 +69,7 @@ void statusCheckMPS(int sig)
    else
    {
    DPRINT1(1,"called statusCheckMPS statTune= %d\n",statTuneFlag);
-      mpsTuneData(1, NULL, 0, 0);
+      mpsTuneData(1, NULL, 0);
    }
    sigInfoproc();
 }
@@ -116,6 +121,7 @@ static void sleepMilliSeconds(int msec)
 static int checkName(const char *name)
 {
    char *mpsId = "2341";
+   char *mpsId2 = "2a03";
    FILE *fd;
    int ret = -1;
    char val[256];
@@ -128,7 +134,10 @@ static int checkName(const char *name)
       ret2 =fscanf(fd,"%s", val);
       fclose(fd);
 // fprintf(stderr,"check id %s against %s\n",val,mpsId);
-      ret = strcmp(mpsId,val);
+      if ( (strcasecmp(mpsId,val) == 0) || (strcasecmp(mpsId2,val) == 0) )
+      {
+          ret = 0;
+      }
       if (ret)
          ret = 1;
    }
@@ -325,10 +334,10 @@ int sendMPS(const char *msg)
       bytes = read(mpsFD,err, sizeof(err)-1);
    }
    bytes = write(mpsFD, msg, strlen(msg) );
-   return(0);
+   return((bytes == strlen(msg)) ? 0 : -1);
 }
 
-void recvMPS(char *msg, size_t len)
+int recvMPS(char *msg, size_t len)
 {
    ssize_t bytes;
    int loops = 0;
@@ -344,7 +353,7 @@ void recvMPS(char *msg, size_t len)
          sleepMilliSeconds(4);  // wait a little extra so that all bytes are present
          bytes = read(mpsFD,msg,len-1);
          msg[bytes] = '\0';
-	 break;
+	     break;
       }
       else
       {
@@ -354,6 +363,7 @@ void recvMPS(char *msg, size_t len)
    }
    if (statTuneFlag)
       DPRINT2(1,"recvMPS %s loops= %d\n",msg,loops);
+   return( (loops < 40) ? 0 : -1);
 }
 
 static void recvTuneMPS(FILE *fd)
@@ -366,54 +376,6 @@ static void recvTuneMPS(FILE *fd)
 
    DPRINT(1,"recvTuneMPS\n");
    strcpy(line,"");
-#ifdef XXX
-      sleepMilliSeconds(4); 
-      reading = 40;
-      // First get the status result
-      while (reading > 0)
-      {
-	 reading--;
-         bytes = 0;
-         ioctl(mpsFD, FIONREAD, &bytes);
-         if (bytes)
-         {
-            int i = 0;
-            int ch;
-
-//   DPRINT1(1,"bytes= %d\n",bytes);
-            while (i < bytes)
-            {
-               i++;
-               if ( read(mpsFD, &ch, 1) )
-               {
-
-//   DPRINT1(1,"ch= %c\n",ch);
-               line[charCnt++] = ch;
-               if (ch == '\n')
-               {
-                  line[charCnt] = '\0';
-                  DPRINT1(1,"%s \n",line);
-		  reading = 0;
-		  break;
-               }
-               }
-            }
-         }
-	 else
-	 {
-   DPRINT(1,"wait for doloop response\n");
-         sleepMilliSeconds(100); 
-	 }
-      }
-#endif
-//      if ( ! strncmp(line,"ERROR",strlen("ERROR")) )
-//      {
-//         DPRINT(1,"Got an error ***************************************\n");
-//	 return;
-//      }
-//      recvMPS(line, sizeof(line));
-//      sleepMilliSeconds(5000); 
-//      recvMPS(line, sizeof(line));
       sendMPS("rfsweepdata?\n");
       reading = 1;
       charCnt = 0;
@@ -468,28 +430,6 @@ if ( (ch != ',') && !isdigit(ch) && (ch != '\n') && (ch != '\r') )
 	 }
       }
    DPRINT1(1,"values read= %d\n",vals);
-#ifdef XXX
-   msg[0] = '\0';
-   sleepMilliSeconds(2);
-   while (loops < 40)  // maximum I have seen is 11 loops
-   {
-      bytes = 0;
-      ioctl(mpsFD, FIONREAD, &bytes);
-      if (bytes)
-      {
-         sleepMilliSeconds(4);  // wait a little extra so that all bytes are present
-         bytes = read(mpsFD,msg,len-1);
-         msg[bytes] = '\0';
-	 break;
-      }
-      else
-      {
-         sleepMilliSeconds(5);
-      }
-      loops++;
-   }
-#endif
-//   DPRINT2(1,"recvMPS %s loops= %d\n",msg,loops);
 }
 
 void closeMPS(void)
@@ -508,45 +448,53 @@ void statusMPS(void)
       statrateMPS(0);
       return;
    }
-   recvMPS(msg, sizeof(msg));
-   setMpsRfstatus( atoi(msg) );
+   if ( !recvMPS(msg, sizeof(msg)))
+      setMpsRfstatus( atoi(msg) );
 
    if (sendMPS("wgstatus?\n"))
       return;
-   recvMPS(msg, sizeof(msg));
-   setMpsWgstatus( atoi(msg) );
+   if ( !recvMPS(msg, sizeof(msg)))
+      setMpsWgstatus( atoi(msg) );
 
    if (sendMPS("lockstatus?\n"))
       return;
-   recvMPS(msg, sizeof(msg));
-   setMpsLockstatus( atoi(msg) );
+   if ( !recvMPS(msg, sizeof(msg)))
+      setMpsLockstatus( atoi(msg) );
 
    if (sendMPS("rxpowermv?\n"))
       return;
-   recvMPS(msg, sizeof(msg));
-   setMpsRxpowermv( atoi(msg) );
+   if ( !recvMPS(msg, sizeof(msg)))
+      setMpsRxpowermv( atoi(msg) );
 
    if (sendMPS("freq?\n"))
       return;
-   recvMPS(msg, sizeof(msg));
-   setMpsFreq( atoi(msg) );
+   if ( !recvMPS(msg, sizeof(msg)))
+      setMpsFreq( atoi(msg) );
 
    if (sendMPS("power?\n"))
       return;
-   recvMPS(msg, sizeof(msg));
-   setMpsPower( atoi(msg) );
+   if ( !recvMPS(msg, sizeof(msg)))
+      setMpsPower( atoi(msg) );
 
 #ifdef XXX
    if (sendMPS("ampstatus?\n"))
       return;
-   recvMPS(msg, sizeof(msg));
-   setMpsAmpstatus( atoi(msg) );
+   if ( !recvMPS(msg, sizeof(msg)))
+      setMpsAmpstatus( atoi(msg) );
 
    if (sendMPS("txpowermv?\n"))
       return;
-   recvMPS(msg, sizeof(msg));
-   setMpsTxpowermv( atoi(msg) );
+   if ( !recvMPS(msg, sizeof(msg)))
+      setMpsTxpowermv( atoi(msg) );
 #endif
+}
+
+void getRfSweepDelay()
+{
+   char msg[128];
+   sendMPS("rfsweepdwelltime?\n");
+   if ( !recvMPS(msg, sizeof(msg)))
+      rfSweepDwell = atoi(msg);
 }
 
 void mpsMode(char *mode)
@@ -618,13 +566,13 @@ void acqMPS(int stage)
       wgstate = rfstate = 0;
       if (sendMPS("rfstatus?\n"))
          return;
-      recvMPS(msg, sizeof(msg));
-      rfstate = atoi(msg);
+      if ( !recvMPS(msg, sizeof(msg)))
+         rfstate = atoi(msg);
 
       if (sendMPS("wgstatus?\n"))
          return;
-      recvMPS(msg, sizeof(msg));
-      wgstate = atoi(msg);
+      if ( !recvMPS(msg, sizeof(msg)))
+         wgstate = atoi(msg);
       mpsCmdOk = (rfstate == 2);
 
 //      if (sendMPS("wgstatus 1\n"))
@@ -654,45 +602,20 @@ void acqMPS(int stage)
    {
       if (sendMPS("rfstatus?\n"))
          return;
-      recvMPS(msg, sizeof(msg));
-      rfstate = atoi(msg);
+      if ( !recvMPS(msg, sizeof(msg)))
+         rfstate = atoi(msg);
       if (rfstate != 1)
       {
-      if (sendMPS("rfstatus 1\n"))
-         return;
-      setMpsRfstatus( 1 );
+         if (sendMPS("rfstatus 1\n"))
+            return;
+         setMpsRfstatus( 1 );
       }
    }
 }
 
-int mpsDataPt(int freq, int ms)
-{
-   char msg[128];
-   int mv;
-
-   sprintf(msg,"freq %d\n",freq);
-   if (sendMPS(msg))
-      return(-1);
-   setMpsFreq( freq );
-   sleepMilliSeconds(ms);
-   sendMPS("rxpowermv?\n");
-   recvMPS(msg, sizeof(msg));
-   mv = atoi(msg);
-   setMpsRxpowermv( mv );
-   sigInfoproc();
-   return( mv );
-}
-
-void mpsTuneData(int init, char *outfile0, int usec,
-		 int np0)
+void mpsTuneData(int init, char *outfile0, int np0)
 {
    static int np;
-#ifdef XXX
-   static int fstart;
-   static double fincr;
-   static int index = 0;
-   int mv;
-#endif
    static FILE *outFD = NULL;
    static char outfile[256];
    char outfile2[256];
@@ -702,48 +625,21 @@ void mpsTuneData(int init, char *outfile0, int usec,
    {
       DPRINT(1,"mpsTuneData init\n");
       np = np0;
-//      fstart = fstart0;
-//      fincr = fincr0;
       strcpy(outfile,outfile0);
-//      strcpy(outfile2,outfile);
-//      strcat(outfile2,".tmp");
       acqMPS(2);
       sleepMilliSeconds(10);
-#ifdef XXX
-      index = 0;
-      if (outFD != NULL)
-         fclose(outFD);
-      if ( (outFD = fopen(outfile2,"w")) == NULL)
-      {
-	 DPRINT2(1,"Failed to open %s err= %s\n",outfile2, strerror(errno));
-         return;
-      }
-#endif
-      statusInterval = ((usec * np)/1000) + 100;  // msec
-	 DPRINT3(1,"msec=%d np= %d statusInterval=%d (ms)\n",
-			 usec/1000, np, statusInterval);
+      statusInterval = (rfSweepDwell * np) + 100;  // msec
+  	  DPRINT3(1,"rfSweepDwell=%d np= %d statusInterval=%d (ms)\n",
+			 rfSweepDwell, np, statusInterval);
       statTuneFlag = 1;
       statrateInit();
-#ifdef XXX
-      sprintf(msg,"freq %d\n",fstart);
-      if (sendMPS(msg))
-      {
-	 DPRINT1(1,"sendMPS %s failed\n",msg);
-         return;
-      }
-      setMpsFreq( fstart );
-#endif
       sendMPS("rfsweepdosweep?\n");
-      recvMPS(msg, sizeof(msg));
+      // recvMPS(msg, sizeof(msg));  Does not reply
       setRtimer( (double) statusInterval * 1e-3, 0.0 );
    DPRINT(1,"mpsTuneData init done\n");
    }
    else if (init == 1)  // collect tune data
    {
-#ifdef XXX
-      int freq;
-#endif
-
       DPRINT(1,"mpsTuneData data phase\n");
       strcpy(outfile2,outfile);
       strcat(outfile2,".tmp");
@@ -761,38 +657,6 @@ void mpsTuneData(int init, char *outfile0, int usec,
 	  outFD = NULL;
       chmod(outfile2, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
       rename(outfile2,outfile);
-#ifdef XXX
-      DPRINT1(1,"mpsTuneData index= %d\n",index);
-      sendMPS("rxpowermv?\n");
-      recvMPS(msg, sizeof(msg));
-      mv = atoi(msg);
-      setMpsRxpowermv( mv );
-      index++;
-      freq = fstart + (int) ((double) index * fincr);
-      sprintf(msg,"freq %d\n",freq);
-      if (sendMPS(msg))
-      {
-         DPRINT1(1,"sendMPS %s failed\n",msg);
-         return;
-      }
-      setMpsFreq( freq );
-      fprintf(outFD,"%d\n", mv);
-      if (index == np)
-      {
-         strcpy(outfile2,outfile);
-         strcat(outfile2,".tmp");
-         fclose(outFD);
-	     outFD = NULL;
-         chmod(outfile2, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
-         rename(outfile2,outfile);
-//         if ( ! link(outfile2,outfile))
-//            unlink(outfile2);
-      }
-      else
-      {
-         setRtimer( (double) statusInterval * 1e-3, 0.0 );
-      }
-#endif
    }
    else if ((init == 2) && (statTuneFlag == 1) )  // abort case
    {

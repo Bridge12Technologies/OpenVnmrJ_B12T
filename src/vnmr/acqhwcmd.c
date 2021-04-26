@@ -2443,7 +2443,7 @@ int sethw(int argc, char *argv[], int retc, char *retv[] )
            }
            else
            {
-              res = -1;
+              res = (cmd == MPS) ? 0 : -1;
               strcpy(msg,"No result file found");
            }
            

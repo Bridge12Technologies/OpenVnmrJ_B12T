@@ -435,7 +435,7 @@ void dataError( char *infoPath, int ct, int ix )
    sendError( ct, ix, HARD_ERROR, HDWAREERROR+DDR_CMPLTFAIL_ERR, infoPath);
 }
 
-void requestMpsData(double freq, double width, double power, double del,
+void requestMpsData(double freq, double width, double power,
 		    char *dataPath, char *infoPath )
 {
    int stat __attribute__((unused));
@@ -445,8 +445,8 @@ void requestMpsData(double freq, double width, double power, double del,
       initSave(infoPath);
    if (pExpMsgQ == NULL)
       pExpMsgQ = openMsgQ("Expproc");
-   sprintf(expCmpCmd,"mpsData %g %g %g %g %s",
-		    freq, width, power, del, dataPath);
+   sprintf(expCmpCmd,"mpsData %g %g %g %s",
+		    freq, width, power, dataPath);
    stat = sendMsgQ(pExpMsgQ,expCmpCmd,strlen(expCmpCmd),MSGQ_NORMAL,
                                 WAIT_FOREVER);
 }

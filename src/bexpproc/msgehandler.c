@@ -78,9 +78,9 @@ extern int activeQnoWait(int oldproc, long key,        /*  procQfuncs.c */
 extern int expQshow(void);                             /*   expQfuncs.c */
 extern int startB12proc(char *codefile);
 extern void sigInfoproc();
-extern void sigB12proc();
 
 extern char systemdir[];
+extern int rfSweepDwell;
 
 
 #ifndef LINUX
@@ -1142,7 +1142,7 @@ int acqAbort(char *args)
 
    unlink( ActiveExpInfo.ExpInfo->Codefile );
    abort_in_progress = 131071;
-   mpsTuneData(2, NULL, 0, 0);
+   mpsTuneData(2, NULL, 0);
    defaultStatrateMPS();
 //   memset( &msge[ 0 ], 0, sizeof( msge ) );
 //   sprintf( &msge[ 0 ], "%d%c", ABORTACQ, DELIMITER_2 );
@@ -2356,10 +2356,13 @@ int mpsCmd(char *args)
          statrateMPS( atoi( &msg[strlen("statrate")] ) );
       DPRINT(1, "EXPPROC Updating MPS status\n");
    }
-   else
+   else if (getTuneFlag() == 0)
    {
+      int rate;
       strcat(msg,"\n");
 
+      rate = getStatrateMPS();
+      statrateMPS( 0 );
       DPRINT1(1, "EXPPROC RECEIVED MPS outfile %s\n", outfile);
       DPRINT1(1, "EXPPROC RECEIVED MPS MESSAGE %s", msg);
 
@@ -2381,10 +2384,20 @@ int mpsCmd(char *args)
          errorMpsRfstat(msg);
          ret = 0;
       }
-      else
-         ret = sendMPS(msg);
+      ret = sendMPS(msg);
+      if ( msg[strlen(msg)-2] == '?' )
+      {
+         ret = recvMPS(msg, sizeof(msg));
+         DPRINT2(1, "recvMPS (ret=%d) %s\n", ret,msg);
+      }
+      statrateMPS( rate );
    }
-   if (ret)
+   else
+   {
+       strcpy(msg,"Cannot set MPS while tuning\n");
+       ret = -1;
+   }
+   if (ret > 0 )
    {
       deliverMessage( returnInterface, "DOWN" );
       return ( 0 );
@@ -2392,14 +2405,6 @@ int mpsCmd(char *args)
    else
    {
       deliverMessage( returnInterface, "started" );
-   }
-   if ( msg[strlen(msg)-2] == '?' )
-   {
-      recvMPS(msg, sizeof(msg));
-   }
-   else
-   {
-      strcpy(msg,"sethw complete\n");
    }
    if (outfile[0] != '\0')
    {
@@ -2411,7 +2416,7 @@ int mpsCmd(char *args)
       strcat(outfile2,".tmp");
       if ( (outFD = fopen(outfile2,"w")) )
       {
-         fprintf(outFD,"0 %s", msg);
+         fprintf(outFD,"%d %s", ((ret == -1) || (msg[0] == 'E')) ? 0 : 1, msg);
          fclose(outFD);
          chmod(outfile2, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
          unlink(outfile);
@@ -2447,7 +2452,6 @@ int mpsData(char *args)
    char outfile[256];
    int freq;
    int width;
-   int usec;
    int power;
    int ret __attribute__((unused));
    int np;
@@ -2459,11 +2463,10 @@ int mpsData(char *args)
    freq = (int) (atof(strtok( NULL, " " )) * 1e6);
    width = (int) (atof(strtok( NULL, " " )) + 0.5);
    power = (int) (atof(strtok( NULL, " " )) *10.0 + 0.1);
-   usec = (int) (atof(strtok( NULL, " " )) * 1e6 + 0.5);
    strcpy(outfile, strtok( NULL, " " ));
    DPRINT1(1, "EXPPROC RECEIVED MPS data outfile %s\n", outfile);
-   DPRINT5(1, "freq= %d width=%d power=%d usec= %d np= %d\n", 
-		   freq, width, power, usec, np);
+   DPRINT4(1, "freq= %d width=%d power=%d np= %d\n", 
+		   freq, width, power, np);
 
    sprintf(msg,"freq %d\n", freq);
    ret = sendMPS(msg);
@@ -2481,54 +2484,10 @@ int mpsData(char *args)
    sprintf(msg,"rfsweeppower %d\n", power);
    ret = sendMPS(msg);
 
-   mpsTuneData(0,outfile,usec,np);
+   mpsTuneData(0,outfile,np);
    return ( 0 );
 }
 
-int tuneData(char *args)
-{
-   static FILE *outFD = NULL;
-   char msg[256];
-   static char outfile[256];
-   static int index =0;
-   int stage;
-   int ret __attribute__((unused));
-   int np;
-   int data;
-
-   stage = atoi(strtok( NULL, " " ));
-   np = ActiveExpInfo.ExpInfo->NumDataPts / 2;
-   if (stage == 0)
-   {
-      setStatAcqState( ACQ_TUNING );
-      sigInfoproc();
-      acqMPS(2);
-      outfile[0] = '\0';
-      strcpy(outfile, strtok( NULL, " " ));
-      if (outFD != NULL)
-         fclose(outFD);
-      outFD = fopen(outfile,"w");
- //     DPRINT1(1, "mtune open %s\n", outfile);
-      index = 0;
-   }
-   index++;
-   strcpy(msg,"power?\n");
-   ret = sendMPS(msg);
-   recvMPS(msg, sizeof(msg));
-   data = atoi(msg);
-//      DPRINT3(1, "mtune[%d:%d], %d\n", index, np,  data);
-   fprintf(outFD,"%d\n",data);
-
-   if (index == np)
-   {
-//      DPRINT1(1, "mtune close %s\n", outfile);
-      fclose(outFD);
-      outFD = NULL;
-      chmod(outfile, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
-   }
-   sigB12proc();
-   return(0);
-}
 /* sethw */
 /* place after the Interactive Access declaration, so it can consult it  */
 

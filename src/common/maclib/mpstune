@@ -8,6 +8,12 @@ endif
 if ($action = 'setup') then
   exists('mpstune','parlib'):$e,$path
   if ($e) then
+    "check if MPS is accessible"
+    sethw('mps','freq?'):$ok,$frq
+    if ($ok = 0) then
+      write('error','Cannot access MPS hardware')
+      return
+    endif
     "save current experiment"
     exists(curexp+'/tutmp','file'):$e
     if ($e < 0.5) then
@@ -30,10 +36,16 @@ if ($action = 'setup') then
   rp=0
   lp=0
   ph
-  sethw('mps','freq?'):$ok,$val
-  mpsfreq=$val*1e-6
-  sethw('mps','rfsweeppower?'):$ok,$val
-  tupwr=$val/10
+  mpsfreq=$frq*1e-6
+  sethw('mps','rfsweeppower?'):$ok,$pwr
+  if not $ok then
+    $pwr=100
+  else
+    if ($pwr = 0) then
+      $pwr=100
+    endif
+  endif
+  tupwr=$pwr/10
   alock='n'
   wshim='n'
   acqmode=''
@@ -41,6 +53,7 @@ if ($action = 'setup') then
   fn_left=mpsfreq - 1e-3*tunesw/2.0
   fn_right=mpsfreq + 1e-3*tunesw/2.0
   fn_label='GHz'
+  sethw('mps','screen 1'):$ok
 elseif ($action = 'start') then
   wbs='mpstune(`process`)'
   wexp='mpstune(`reset`)'
@@ -79,8 +92,25 @@ elseif ($action = 'setfreq') then
       acqmode=''
       wbs=''
       halt(' ')
+      sleep(0.2)
     else
       setmps('freq',$2)
+    endif
+    fn_left=mpsfreq - 1e-3*tunesw/2.0
+    fn_right=mpsfreq + 1e-3*tunesw/2.0
+  endif
+
+elseif ($action = 'movecf') then
+  if (cr <> mpsfreq) then
+    if (acqmode='mpstune') then
+      mpsfreq=cr
+      setvalue('mpsfreq',cr,'processed')
+      acqmode=''
+      wbs=''
+      halt(' ')
+      sleep(0.2)
+    else
+      setmps('freq',cr)
     endif
     fn_left=mpsfreq - 1e-3*tunesw/2.0
     fn_right=mpsfreq + 1e-3*tunesw/2.0
@@ -94,6 +124,7 @@ elseif ($action = 'setspan') then
       acqmode=''
       wbs=''
       halt(' ')
+      sleep(0.2)
     endif
     fn_left=mpsfreq - 1e-3*tunesw/2.0
     fn_right=mpsfreq + 1e-3*tunesw/2.0
@@ -107,6 +138,9 @@ elseif ($action = 'setpwr') then
       acqmode=''
       wbs=''
       halt(' ')
+      sleep(0.2)
+    else
+      setmps('tunepwr',$2)
     endif
   endif
 
@@ -118,6 +152,7 @@ elseif ($action = 'np') then
       acqmode=''
       wbs=''
       halt(' ')
+      sleep(0.2)
     endif
   endif
 
@@ -133,6 +168,7 @@ elseif ($action = 'quit') then
   if (acqmode='mpstune') then
     aa('Tuning Complete')
   endif
+  sethw('mps','screen 0'):$ok
   acqmode=''
   tmpreturn('tutmp')
   exists('acqstatus','parameter'):$e

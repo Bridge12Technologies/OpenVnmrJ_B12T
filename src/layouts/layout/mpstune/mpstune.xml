@@ -17,6 +17,14 @@
     rows="1"
     columns="1"
     >
+    <button loc="210 35" size="80 20"
+      style="Heading2"
+      label="Move CF"
+      vc="mpstune('movecf')"
+      bg="transparent"
+      justify="Center"
+      decor1="yes"
+      />
     <menu loc="120 60" size="80 20"
       style="PlainText"
       vq="np"
@@ -53,7 +61,7 @@
       style="PlainText"
       label="0.42"
       vq="np"
-      set="$VALUE=0.1+np*0.01/2.0"
+      set="sethw('mps','rfsweepdwelltime?'):$e,$d if ($e) then $VALUE=($d*np/2+100)/1000 else $VALUE='' endif"
       />
     <textmessage loc="120 210" size="65 20"
       style="PlainText"
@@ -103,6 +111,7 @@
       style="PlainText"
       vq="tupwr"
       vc="mpstune('setpwr',$VALUE)"
+      set="$VALUE=tupwr"
       digital="true"
       min="0"
       max="20"
@@ -158,7 +167,7 @@
     <menu loc="120 35" size="80 20"
       style="PlainText"
       vq="tunesw"
-      vc="mpstune('tunesw',$VALUE)"
+      vc="mpstune('setspan',$VALUE)"
       set="$VALUE=tunesw"
       editable="No"
       >

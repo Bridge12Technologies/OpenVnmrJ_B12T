@@ -12,17 +12,18 @@
 
 extern int  openMPS(void);
 extern int  sendMPS(const char *msg);
-extern void recvMPS(char *msg, size_t len);
+extern int  recvMPS(char *msg, size_t len);
 extern void closeMPS(void);
 extern void statusMPS(void);
 extern int  getStatrateMPS();
+extern int  getTuneFlag();
 extern void statusCheckMPS(int sig);
 extern void statrateMPS(int msec);
 extern void acqMPS(int stage);
 extern void mpsMode(char *mode);
 extern void mpsPower(int power);
 extern int  mpsDataPt(int freq, int ms);
-extern void mpsTuneData(int init, char *outfile0, int msec, int np0);
+extern void mpsTuneData(int init, char *outfile0, int np0);
 extern void defaultStatrateMPS(void);
 extern void errorMpsRfstat(char *msg);
 

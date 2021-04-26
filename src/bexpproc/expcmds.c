@@ -46,7 +46,6 @@ extern int mapOut();
 extern int mpsCmd();
 extern int mpsCntrl();
 extern int mpsData();
-extern int tuneData();
 extern int parmChg();
 extern int queryStatus();
 extern int rebootConsole();
@@ -100,7 +99,6 @@ cmd table[] = {
     {"mps"	, mpsCmd, 	"Send command to MPS" },
     {"mpsCntrl"	, mpsCntrl, 	"Send commands from B12proc to MPS" },
     {"mpsData"	, mpsData, 	"Collect MPS tuning data" },
-    {"tuneData"	, tuneData, 	"Collect RF tuning data" },
     {"parmchg"	, parmChg, 	"Set processing mask" },
     {"relay"	, relayCmd, 	"Relay command to the named proc" },
     {"resume"	, autoResume, 	"Send resume command to Autoproc, start automation" },
