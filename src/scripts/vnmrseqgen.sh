@@ -19,8 +19,6 @@
 #**          although if it is, it is removed, so test or test.c    **
 #**          are both acceptable.                                   **
 #**   Modified:							    **
-#**    10/25/89   Greg B.    Added Code to include the DPS phase of **
-#**			     the pulse sequence compilation.	    **
 #**    01/25/96   Rolf K.    allows compilation of sequences in     **
 #**             $vnmrsystem/psglib; the sequence will be copied     **
 #**		into the local psglib and treated as a local file   **
@@ -38,13 +36,13 @@ echo "Beginning Pulse Sequence Generation Process:"
 # (Prevents problems with one user using UNIX command "su"
 # to become some other user)
 
-if [ ! $USER = $LOGNAME ]; then
+if [[ ! -z $LOGNAME ]] && [[ $USER != $LOGNAME ]]; then
    echo "Username: "$USER"  and Logname: "$LOGNAME"  do not agree."
    echo ""
    exit
 fi
 
-if (test ! -f "$vnmrsystem"/lib/libparam.so)
+if [[ ! -f "$vnmrsystem"/lib/libparam.so ]]
 then
    echo " "
    echo " "
@@ -99,6 +97,16 @@ if [ x$osname="xLinux" ]; then
    if [[ $? -eq 0 ]]
    then
       Wextra=${Wextra}" -Wno-misleading-indentation"
+   fi
+   gcc -Q --help=warning | grep Wstringop-truncation >& /dev/null
+   if [[ $? -eq 0 ]]
+   then
+      Wextra=${Wextra}" -Wno-stringop-truncation"
+   fi
+   gcc -Q --help=warning | grep Wformat-overflow >& /dev/null
+   if [[ $? -eq 0 ]]
+   then
+      Wextra=${Wextra}" -Wno-format-overflow"
    fi
 fi
 

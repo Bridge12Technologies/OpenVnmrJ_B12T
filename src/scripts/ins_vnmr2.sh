@@ -1737,7 +1737,6 @@ home yes no '${nmr_home}'/$accname' > "$dest_dir"/adm/users/userDefaults.bak
       sudo chmod 4755 "$dest_dir"/bin/cptoconpar
    fi
 
-
    #To have the Postgres postmaster started at system boot up
    if [ x$os_version != "xwin" ] 
    then
@@ -1781,14 +1780,14 @@ home yes no '${nmr_home}'/$accname' > "$dest_dir"/adm/users/userDefaults.bak
            mv /etc/init.d/postgresql /etc/init.d/postgresql.moveAside
         fi
         # Use older version. New version has problem with client server protocol
-        if [ $distmajor -eq 8 ] && [ -d "$dest_dir"/pgsql/bin_ver7 ] ; then
-           mv "$dest_dir"/pgsql/bin_ver7 "$dest_dir"/pgsql/bin
+        if [ $distmajor -eq 8 ] && [ -d "$dest_dir"/pgsql/bin_ver9 ] ; then
+           mv "$dest_dir"/pgsql/bin_ver9 "$dest_dir"/pgsql/bin
         fi
 
      else
         # Use older version. New version has problem with client server protocol
-        if [ $distmajor -gt 16 ] && [ -d "$dest_dir"/pgsql/bin_ver7 ] ; then
-           mv "$dest_dir"/pgsql/bin_ver7 "$dest_dir"/pgsql/bin
+        if [ $distmajor -gt 16 ] && [ -d "$dest_dir"/pgsql/bin_ver9 ] ; then
+           mv "$dest_dir"/pgsql/bin_ver9 "$dest_dir"/pgsql/bin
         fi
         if [ $distmajor -gt 16 ] ; then
            systemctl --now mask postgresql > /dev/null 2>&1
@@ -1802,7 +1801,7 @@ home yes no '${nmr_home}'/$accname' > "$dest_dir"/adm/users/userDefaults.bak
            fi
         fi
         #remove previous version
-        rm -f /usr/init.d/pgsql
+        rm -f /etc/init.d/pgsql
         sudo /usr/sbin/update-rc.d -f pgsql remove > /dev/null 2>&1
         #install new version
         sudo cp -p "$dest_dir"/bin/S99pgsql /etc/init.d/pgsql
@@ -2279,6 +2278,7 @@ then
       fi
       echo " "
    fi
+
 fi
 
 #
