@@ -152,16 +152,6 @@
   <protocol  name="HETERO2DJ"  label=""         tab="Liquids"   menu1="JSpectra"     menu2="" />
   <protocol  name="HOMO2DJ"    label=""         tab="Liquids"   menu1="JSpectra"     menu2="" />
 
-  <!-- Hadamard Tab  -->
-  <protocol name="dqcosyHT"    label=""      tab="Liquids"     menu1="Hadamard"   menu2="" />
-  <protocol name="gcosyHT"     label=""      tab="Liquids"     menu1="Hadamard"   menu2="" />
-  <protocol name="hetcorHT"    label=""      tab="Liquids"     menu1="Hadamard"   menu2="" />
-  <protocol name="hmbcHT"      label=""      tab="Liquids"     menu1="Hadamard"   menu2="" />
-  <protocol name="hsqcHT"      label=""      tab="Liquids"     menu1="Hadamard"   menu2="" />
-  <protocol name="hsqctocsyHT" label=""      tab="Liquids"     menu1="Hadamard"   menu2="" />
-  <protocol name="noesyHT"     label=""      tab="Liquids"     menu1="Hadamard"   menu2="" />
-  <protocol name="roesyHT"     label=""      tab="Liquids"     menu1="Hadamard"   menu2="" />
-  <protocol name="tocsyHT"     label=""      tab="Liquids"     menu1="Hadamard"   menu2="" />
   <!-- DOSY Tab -->
   <protocol name="Dbppste"         label=""     tab="Liquids"   menu1="DOSY"  menu2="2D DOSY" />
   <protocol name="Dbppste_wg"      label=""     tab="Liquids"   menu1="DOSY"  menu2="2D DOSY" />
