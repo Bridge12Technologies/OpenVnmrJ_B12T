@@ -1,0 +1,10 @@
+# Updated by op2 on Thu Aug 26 08:32:31 PDT 2021
+# macro followed by semicolon separated attributes
+# macro      onoff;label;
+#
+psPreacq     on;Pre-acquisition delay;
+psLock       off;Lock sample;
+psTune       off;Probe tuning;
+psPshim      off;Proshim;
+psGshim      off;Gradient shimming;
+psGain       off;Auto gain;

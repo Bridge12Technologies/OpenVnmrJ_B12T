@@ -49,34 +49,29 @@ then
     if [ x$gitSSH = "x" ]
     then
        echo "===>>> $date Clone OpenVnmrJ (https) <<<==="
-       git clone ${gitURL}
+       git clone ${gitURL}/OpenVnmrJ.git
     else
        echo "===>>> $date Clone OpenVnmrJ (ssh) <<<==="
-       git clone ${gitSSH}
+       git clone ${gitSSH}/OpenVnmrJ.git
     fi
-    if [ x$gitBranch != "x" -a x$gitBranch != "xmaster" ]
-    then
-       cd $buildDir/OpenVnmrJ
-       git checkout $gitBranch
-    fi
+    cd $buildDir/OpenVnmrJ
+    git checkout $gitRelease
   fi
   if [ x$doGitClone = "xpull" ]
   then
     cd $buildDir/OpenVnmrJ
-    rm -rf src/* # src is mixed with copied files and build artifacts
+    # src is mixed with copied files and build artifacts
+    rm -rf src
     git checkout src
     git pull 
-#   git fetch origin master
-#    git checkout origin/master -- src
-#    git pull origin master # on CentOS's older git above doesn't work
+    git checkout $gitRelease
   fi
   if [ x$doGitClone = "xrebuild" ]
   then
     cd $buildDir/OpenVnmrJ
-    rm -rf src/*
-    echo "git checkout -- src"
-    #git checkout src
-    git checkout -- src
+    rm -rf src
+    git checkout src
+    git checkout $gitRelease
   fi
 
   # Step 3. Clone the ovjTools git-repo
@@ -90,12 +85,14 @@ then
     echo "===>>> $date Removing old ovjTools <<<==="
     rm -rf ovjTools
     echo "===>>> $date Clone ovjTools (https) <<<==="
-    git clone https://github.com/OpenVnmrJ/ovjTools.git
+    git clone ${gitURL}/ovjTools.git
+    git checkout $gitRelease
   fi
   if [ x$doGitToolsClone = "xpull" ]
   then
     cd $buildDir/ovjTools
     git pull 
+    git checkout $gitRelease
   fi
 
   # Step 4. Add Bridge12 components

@@ -28,5 +28,6 @@ extern int getMpsFreq(void);
 extern int setMpsFreq(int val);
 extern int getMpsPower(void);
 extern int setMpsPower(int val);
+extern int setStatOpsCmpl(void);
 
 #endif

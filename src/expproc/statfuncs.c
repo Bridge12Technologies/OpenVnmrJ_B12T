@@ -1052,6 +1052,19 @@ int lockit(const char *lockPath, const char *idPath, time_t timeout)
  *  power -> AcqSpinProfile
  */
 
+int setStatOpsCmpl()
+{
+   ExpStatus->DataTime = time(NULL);
+   shrmTake(ExpStatusObj);
+   if (ExpStatus->csb.AcqOpsComplCnt > 10000)
+      ExpStatus->csb.AcqOpsComplCnt = 0;
+   else
+      ExpStatus->csb.AcqOpsComplCnt += 1;
+   gettimeofday( &(ExpStatus->TimeStamp), NULL);
+   shrmGive(ExpStatusObj);
+   return(0);
+}
+
 int getMpsRfstatus()
 {
    return((int)ExpStatus->csb.AcqSpinSpan);

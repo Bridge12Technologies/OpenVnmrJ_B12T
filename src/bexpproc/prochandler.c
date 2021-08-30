@@ -248,13 +248,13 @@ void killTasks()
 /* this is used when Expproc is to terminate */
 void killEmAll()
 {
-   killEmDead(EXPPROC+1,PROC_RECORD_SIZE);
+   killEmDead(EXPPROC+1,PROC_RECORD_SIZE-1);
 }
 
 char *registerDeath(pid_t pid)
 {
    int i;
-   for( i = EXPPROC; i <= PROC_RECORD_SIZE; i++) 
+   for( i = EXPPROC; i < PROC_RECORD_SIZE; i++) 
    {
        DPRINT2(1,"registerDeath:  died: %d, who: %d\n",
 		  pid,taskList[i].taskPid);
