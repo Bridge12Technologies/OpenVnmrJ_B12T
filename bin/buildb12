@@ -25,6 +25,7 @@
 #  gitURL         URL for git repo.
 #  ovjConsole     flag to tell whether to include console software
 #  sconsJoption   helps speed up the process. Typical value is #CPUs+1
+#  gitRelease      Specify what to build
 #
 # set -x
 
@@ -52,8 +53,8 @@ then
    doGitToolsClone=yes
 fi
 
-gitURL='https://github.com/OpenVnmrJ/OpenVnmrJ.git'
-gitSSH='ssh://git@github.com/userName/OpenVnmrJ.git'
+gitURL='https://github.com/OpenVnmrJ'
+gitSSH='ssh://git@github.com/userName'
 gitSSH=''
 # If gitSSH is an empty string, the gitURL is used
 # If you plan to commit changes to the OpenVnmrJ project,
@@ -61,10 +62,12 @@ gitSSH=''
 # Replace the userName string in gitSSH with your github account name
 # and comment out the second gitSSH line (gitSSH='')
 
-gitBranch='master'
-# If you plan to commit changes, you should commit them to the development branch.
-# If you just want to build the latest official release, build from the master branch.
-# gitBranch='development'
+gitRelease='master'
+# Uncomment one of the following to build a specific release
+# OpenVnmrJ 1.1A and 2.1A require CentOS 6 with scons version 2
+# gitRelease='OpenVnmrJ_1.1A'
+# gitRelease='OpenVnmrJ_2.1A'
+# gitRelease='OpenVnmrJ_3.1A'
 
 doScons=yes
 buildB12=yes
@@ -92,6 +95,6 @@ echo "You can monitor the build with the command"
 echo "tail -f $ovjLogFile"
 
 cd "${ovjBuildDir}"
-export ovjBuildDir workspacedir OVJ_TOOLS dvdBuildName1 ovjLogFile doScons buildB12 doGitClone mail_list gitURL gitSSH gitBranch sconsJoption doGitToolsClone
+export ovjBuildDir workspacedir OVJ_TOOLS dvdBuildName1 ovjLogFile doScons buildB12 doGitClone mail_list gitURL gitSSH gitRelease sconsJoption doGitToolsClone
 "${ovjBuildDir}/OpenVnmrJ_B12T/bin/makeb12" > "${ovjLogFile}" 2>&1
 

@@ -25,6 +25,7 @@ SConscript(os.path.join(ncommPath, 'SConstruct'))
 vnmrPath     = os.path.join(cwd, os.pardir, 'vnmr')
 vnmrHdrList  = [
                 'allocate.h',
+                'asm.h',
                 'CSfuncs.h',
                 'data.h',
                 'dpsdef.h',
@@ -38,6 +39,7 @@ vnmrHdrList  = [
                 'vfilesys.h',
                 'wjunk.h']
 vnmrList = [
+                'asmfuncs.c',
                 'assign.c',
                 'allocate.c',
                 'CSfuncs.c',
@@ -105,7 +107,7 @@ makeList  = ['makeuserpsg.lnx',
 # build environment
 env = Environment(CCFLAGS    = '-c -O -m64 -fPIC -Wall',
                   CPPDEFINES = ['LINUX', 'NESSIE', 'PSG_LC'],
-                  LINKFLAGS  = '-m64 -Wl,-rpath,.',
+                  LINKFLAGS  = '-m64 -Wl,-rpath,/vnmr/lib',
                   CPPPATH    = [cwd])
 
 

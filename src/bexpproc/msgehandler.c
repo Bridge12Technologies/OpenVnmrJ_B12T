@@ -1730,6 +1730,7 @@ getStatBlock(char *args)
 
 	deliverMessage( returnInterface, "OK" );
 	statusMPS();
+    setStatOpsCmpl();
 	return 0;
 }
 
@@ -2343,6 +2344,7 @@ int mpsCmd(char *args)
    {
       DPRINT(1, "EXPPROC Updating MPS status\n");
       statusMPS();
+      setStatOpsCmpl();
    }
    else if ( strstr(msg,"statrate") )
    {

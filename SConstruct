@@ -138,6 +138,7 @@ acqBuildList = """
                          batten
                          bexpproc
                          infoproc
+                         nautoproc
                          procproc
                          stat
                          """.split();

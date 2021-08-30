@@ -20,6 +20,7 @@
 #include "variables.h"
 #include "params.h"
 #include "pvars.h"
+#include "asm.h"
 #include "abort.h"
 #include "vfilesys.h"
 #include "CSfuncs.h"
@@ -1418,6 +1419,59 @@ int setup4D(double ni3, double ni2, double ni, char *parsestr, char *arraystr)
 +----------------------------------------------------------------------------*/
 static void queue_psg(char *auto_dir, char *fid_name, char *msg)
 {
+  FILE *outfile;
+  FILE *samplefile;
+  SAMPLE_INFO sampleinfo;
+  char tfilepath[MAXSTR*2];
+/*  char datapath[MAX_TEXT_LEN]; */
+  char val[MAX_TEXT_LEN];
+  int entryindex;
+
+  read_info_file(auto_dir);	/* map enterQ key words */
+
+  strcpy(tfilepath,curexp);
+  strcat(tfilepath,"/psgdone");
+  outfile=fopen(tfilepath,"w");
+  if (outfile)
+  {
+      fprintf(outfile,"%s\n",msg);
+      strcpy(tfilepath,curexp);
+      strcat(tfilepath,"/sampleinfo");
+      samplefile=fopen(tfilepath,"r");
+      if (samplefile)
+      {
+	 read_sample_info(samplefile,&sampleinfo);
+
+         /* get index to DATA: prompt, then update data text field with data file path */ 
+         get_sample_info(&sampleinfo,"DATA:",val,128,&entryindex);
+         /* sprintf(datapath,"%s/%s",auto_dir,fid_name); */
+         /* strncpy(sampleinfo.prompt_entry[entryindex].etext,datapath,MAX_TEXT_LEN); */
+         strncpy(sampleinfo.prompt_entry[entryindex].etext,fid_name,MAX_TEXT_LEN);
+
+         /* update STATUS field to Active */
+         get_sample_info(&sampleinfo,"STATUS:",val,128,&entryindex);
+         if (option_check("shimming"))
+            strcpy(sampleinfo.prompt_entry[entryindex].etext,"Shimming");
+         else
+            strcpy(sampleinfo.prompt_entry[entryindex].etext,"Active");
+
+         write_sample_info(outfile,&sampleinfo);
+
+         fclose(samplefile);
+         sprintf(tfilepath,"cat %s/psgdone >> %s/psgQ",curexp, auto_dir); 
+
+      }
+      else
+      {
+         text_error("Experiment unable to be queued\n");
+         sprintf(tfilepath,"rm %s/psgdone",curexp); 
+      }
+      fclose(outfile);
+      system(tfilepath);
+  }
+  else
+      text_error("Experiment unable to be queued\n");
+
 }
 /*------------------------------------------------------------------------------
 |
@@ -1467,13 +1521,11 @@ int QueueExp(char *codefile, int nextflag)
         autoflag = ((autopar[0] == 'y') || (autopar[0] == 'Y'));
 
     expflags = 0;
-#ifdef XXX
     if (autoflag)
 	expflags = ((long)expflags | AUTOMODE_BIT);  /* set automode bit */
 
     if (ra_flag)
         expflags |=  RESUME_ACQ_BIT;  /* set RA bit */
-#endif
 
     if (getparm("file","string",CURRENT,fidpath,MAXSTR))
 	return(ERROR);
@@ -1542,6 +1594,7 @@ int QueueExp(char *codefile, int nextflag)
            ret = system(commnd);
         }
 
+        lockPsgQ(autodir);
         if (nextflag)
         {
           /* Temporarily use commnd to hold the filename */
@@ -1564,6 +1617,7 @@ int QueueExp(char *codefile, int nextflag)
         {
           queue_psg(autodir,fidpath,message);
         }
+        unlockPsgQ(autodir);
         sync();
     }
     else
