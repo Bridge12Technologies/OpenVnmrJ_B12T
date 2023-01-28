@@ -28,7 +28,11 @@ sudo apt update
 . /etc/lsb-release
 distmajor=${DISTRIB_RELEASE:0:2}
 if [ $distmajor -gt 18 ] ; then
-   sudo apt install -y $toolList libstdc++-8-dev
+   if [ $distmajor -gt 20 ] ; then
+       sudo apt install -y $toolList libc6-dev
+   else
+       sudo apt install -y $toolList libstdc++-8-dev libc6-dev
+   fi
 else
    sudo apt install -y $toolList libstdc++-7-dev
 fi
