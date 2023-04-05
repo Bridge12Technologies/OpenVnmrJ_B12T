@@ -61,8 +61,8 @@ then
   then
     cd $buildDir/OpenVnmrJ
     # src is mixed with copied files and build artifacts
-    rm -rf src
-    git checkout src
+    rm -rf src scripts README.md SConstruct
+    git checkout src scripts README.md SConstruct
     git pull 
     git checkout $gitRelease
   fi
