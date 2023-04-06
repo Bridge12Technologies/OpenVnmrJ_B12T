@@ -23,8 +23,8 @@ seqlibPath = os.path.join(seqPath,'seqlib')
 Execute('rm -rf ' + seqlibPath)
 os.makedirs(seqlibPath)
 psglibPath = os.path.join(seqPath,'psglib')
-Execute('rm -rf ' + psglibPath)
-os.makedirs(psglibPath)
+if not os.path.exists(psglibPath):
+   os.makedirs(psglibPath)
 
 # actual builds
 

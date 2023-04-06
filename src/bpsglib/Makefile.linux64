@@ -1,0 +1,23 @@
+# This Makefile builds RadioProcessor SpinAPI example programs on Linux.
+
+# Name of the library
+SPINAPI = spinapi
+ARCH    = x64
+
+CC        = gcc 
+#Compile SpinAPI into 64-bit object files
+CFLAGS = -m64 -std=gnu99 -fPIC -Wall -L/vnmr/spinapi/lib -Wl,-rpath,/vnmr/spinapi/lib
+CFLAGS2   =
+DEFINES   = -D__LINUX__
+INC       = -I/vnmr/spinapi/inc
+INC2      = 
+LIB       = -lspinapi -lusb -lm -lpthread -ldl -lrt
+COMPILE   = $(CFLAGS) $(CFLAGS2) $(DEFINES) $(INC) $(INC2) $(LIB)
+OBJECTS   = singlepulse_nmr
+
+
+
+all: $(OBJECTS) 
+
+$(OBJECTS): %: %.c
+	$(CC) -o $@ $< $(COMPILE)
