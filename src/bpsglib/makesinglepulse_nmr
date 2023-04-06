@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# set -x
+# ovjBuildDir="/home/dannuc/ovjbuild"
+
+buildDir=$ovjBuildDir
+echo "build directory is $buildDir"
+
+# home=/home/vnmr1
+# home=/home/dannuc
+# workdir=$home/ovjbuild
+# srcdir=$workdir/OpenVnmrJ/src
+
+cd $buildDir/OpenVnmrJ/src/bpsglib
+
+destdir=$buildDir/vnmr/psglib
+if [ ! -d $destdir ]; then
+   mkdir -p $destdir
+fi
+spinapi=$buildDir/vnmr/spinapi
+cp singlepulse_nmr.c64 singlepulse_nmr.c
+( make -e -f Makefile.linux64 INC2=-I$spinapi/inc CFLAGS2=-L$spinapi/lib )
+rm singlepulse_nmr.c
+cp singlepulse_nmr singlepulse_nmr.sh $destdir/.

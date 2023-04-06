@@ -102,6 +102,8 @@ then
 
   echo "===>>> $date Build spinapi libraries first <<<==="
   $buildDir/OpenVnmrJ/src/spinapi/makespinapi
+  echo "===>>> $date Build singlepulse_nmr test pulse sequence <<<==="
+  $buildDir/OpenVnmrJ/src/bpsglib/makesinglepulse_nmr
 
   echo "===>>> $date Executing 'scons' <<<==="
   # build status

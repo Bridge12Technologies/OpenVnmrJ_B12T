@@ -64,6 +64,7 @@ PSelem *PSstart = NULL;
 
 struct _Globals {
                   int debug;
+                  int debugSC;
                   int board_number;
                   int board_open;
                   int board_start;
@@ -182,6 +183,7 @@ static int readPS(Globals *globals)
 void setGlobalsDefault(Globals *globals, const char *path)
 {
    globals->debug = 0;
+   globals->debugSC = 0;
    globals->board_number = 0;
    globals->board_open = 0;
    globals->board_start = 0;
@@ -203,6 +205,7 @@ void printGlobals(Globals *globals)
 {
    diagMessage("Globals\n\n");
    diagMessage("  debug:          %d\n",globals->debug);
+   diagMessage("  debugSC:        %d\n",globals->debugSC);
    diagMessage("  board_number:   %d\n",globals->board_number);
    diagMessage("  board_open:     %d\n",globals->board_open);
    diagMessage("  board_start:    %d\n",globals->board_start);
@@ -228,7 +231,11 @@ void printExps(Exps *exps)
 
 int initSystem(Globals *globals)
 {
+   if (globals->debug)
+      diagMessage("call pb_count_boards = ");
    int numBoards = pb_count_boards();
+   if (globals->debug)
+      diagMessage("%d\n", numBoards);
 
    if (numBoards <= 0)
    {
@@ -240,7 +247,11 @@ int initSystem(Globals *globals)
       diagMessage("Invalid board number. Use (0-%d).\n", numBoards - 1);
       return -1;
    }
+   if (globals->debug)
+      diagMessage("call pb_select_board(%d)\n", globals->board_number);
    pb_select_board(globals->board_number);
+   if (globals->debug)
+      diagMessage("call pb_init\n");
    if (pb_init())
    {
       diagMessage("Error initializing board: %s\n", pb_get_error ());
@@ -254,7 +265,11 @@ int configSystem(Globals *globals)
 {
    int i;
 
+   if (globals->debug)
+      diagMessage("call pb_set_defaults\n");
    pb_set_defaults ();
+   if (globals->debug)
+      diagMessage("call pb_core_Clock(%g)\n", globals->adc_frequency);
    pb_core_clock (globals->adc_frequency);
 	
    // Load the shape parameters
@@ -262,6 +277,8 @@ int configSystem(Globals *globals)
 
    for (i = 0; i < 1024; i++)  // rectangular shape
       shape_data[i] = 1.0;
+   if (globals->debug)
+      diagMessage("call pb_dds_load(%d)\n", DEVICE_SHAPE);
    pb_dds_load (shape_data, DEVICE_SHAPE);
    return(0);
 }
@@ -272,7 +289,11 @@ int configExp(Globals *globals, Exps *exps)
 
    if (globals->bypass_fir)
       cmd = BYPASS_FIR;
+   if (globals->debug)
+      diagMessage("call pb_setup_filters(%g,%d,%d) = ", exps->sw_kHz/1000.0, exps->nt, cmd);
    exps->dec_amount = pb_setup_filters (exps->sw_kHz/1000.0, exps->nt, cmd);
+   if (globals->debug)
+      diagMessage("%d\n", exps->dec_amount);
    if (exps->dec_amount <= 0)
       exps->dec_amount = 1;
    exps->actual_sw = (globals->adc_frequency*1000.0) /(double) exps->dec_amount;
@@ -281,38 +302,73 @@ int configExp(Globals *globals, Exps *exps)
                   exps->actual_sw, globals->adc_frequency,
                   exps->dec_amount, exps->at);
 
+   if (globals->debug)
+      diagMessage("call pb_overflow(1, 0)\n");
    pb_overflow (1, 0);		//Reset the overflow counters
+   if (globals->debug)
+      diagMessage("call pb_scan_count(1)\n");
    pb_scan_count (1);		//Reset scan counter
 
+   if (globals->debug)
+      diagMessage("call pb_set_num_points(%d)\n", globals->complex_points);
    pb_set_num_points(globals->complex_points);
+   if (globals->debug)
+      diagMessage("call pb_set_scan_segments(1)\n");
    pb_set_scan_segments(1);
 
+   if (globals->debug)
+      diagMessage("call pb_start_programming(%d)\n", FREQ_REGS);
    pb_start_programming(FREQ_REGS);
+   if (globals->debug)
+      diagMessage("call pb_set_freq(%g)\n", exps->sfrq);
    pb_set_freq(exps->sfrq);
+   if (globals->debug)
+      diagMessage("call pb_stop_programming\n");
    pb_stop_programming();
 
    //Real Phase
+   if (globals->debug)
+   {
+      diagMessage("call pb_start_programming(%d)\n", COS_PHASE_REGS);
+      diagMessage("call pb_set_phase 0, 90, 180, 270\n");
+   }
    pb_start_programming (COS_PHASE_REGS);
    pb_set_phase (0.0);
    pb_set_phase (90.0);
    pb_set_phase (180.0);
    pb_set_phase (270.0);
+   if (globals->debug)
+      diagMessage("call pb_stop_programming\n");
    pb_stop_programming ();
  
    //Imaginary Phase
+   if (globals->debug)
+   {
+      diagMessage("call pb_start_programming(%d)\n", SIN_PHASE_REGS);
+      diagMessage("call pb_set_phase 0, 90, 180, 270\n");
+   }
    pb_start_programming (SIN_PHASE_REGS);
    pb_set_phase (0.0);
    pb_set_phase (90.0);
    pb_set_phase (180.0);
    pb_set_phase (270.0);
+   if (globals->debug)
+      diagMessage("call pb_stop_programming\n");
    pb_stop_programming ();
  
    //Transmitted Phase
+   if (globals->debug)
+   {
+      diagMessage("call pb_start_programming(%d)\n", TX_PHASE_REGS);
+      diagMessage("call pb_set_phase 0, 90, 180, 270\n");
+   }
    pb_start_programming (TX_PHASE_REGS);
    pb_set_phase (0.0);
    pb_set_phase (90.0);
    pb_set_phase (180.0);
    pb_set_phase (270.0);
+   if (globals->debug)
+      diagMessage("call pb_stop_programming\n");
    pb_stop_programming ();
 
    exps->exp_time = 0.0;
@@ -351,6 +407,8 @@ int getData(Globals *globals, Exps *exps)
        }
        sleepMilliSeconds((int) (waitTime) );
    }
+   if (globals->debug)
+      diagMessage("call pb_read_status\n");
    while (!(pb_read_status() & STATUS_STOPPED))
    {
        if ( access(globals->CodePath, F_OK) )
@@ -362,6 +420,8 @@ int getData(Globals *globals, Exps *exps)
       pb_sleep_ms (1);
    }
 
+   if (globals->debug)
+      diagMessage("call pb_get_data(%d, real, imag)\n", globals->complex_points);
    if( pb_get_data (globals->complex_points, globals->real, globals->imag) < 0 )
    {
       diagMessage("Failed to retrieve data\n");
@@ -375,7 +435,10 @@ int getData(Globals *globals, Exps *exps)
 void resetExp(int pbRes, Exps *exps)
 {
    if (exps->opCode == LOOP)
+   {
+      diagMessage("set loop index to %d\n",pbRes);
       exps->loop = pbRes;
+   }
    if (exps->opCode == END_LOOP)
    {
 // diagMessage("end_loop exptime= %g loop count= %d\n",exps->exp_time, exps->loopCnt);
@@ -527,8 +590,8 @@ int main (int argc, char *argv[])
          exps.elem= atof(r->vals);
          exps.opCode = CONTINUE;
          exps.mpsStatus = 0;
-	     exps.useAmp = AMP0;
-	     exps.useShape = NO_SHAPE;
+	      exps.useAmp = AMP0;
+	      exps.useShape = NO_SHAPE;
          resetExp(0, &exps);
          if (exps.elem == 1)
          {
@@ -539,8 +602,12 @@ int main (int argc, char *argv[])
                initError( & (globals.InfoFile[0]) );
                break;
             }
-            if (globals.debug)
+            if (globals.debugSC)
+            {
+               if (globals.debug)
+                  diagMessage("call pb_set_debug(1)\n");
                pb_set_debug(1);
+            }
             if (configSystem( &globals))
                break;
          }
@@ -561,6 +628,7 @@ int main (int argc, char *argv[])
 	 int ret __attribute__((unused));
 
 	 sprintf(cmd,"/vnmr/bin/mcl_RUDAT %s\n",r->vals);
+         diagMessage("set atten with %s\n", cmd);
          ret = system(cmd);
       }
       else if ( ! strcmp(r->inst,"MPS") )
@@ -587,6 +655,9 @@ int main (int argc, char *argv[])
                                           &(val[2]), &(val[3]));
 	 for (i=0; i<num; i++)
 	 {
+            if (globals.debug)
+               diagMessage("call pb_set_amp(%g, %d)\n",
+                           (double) val[i]/1000.0, i);
             pb_set_amp((double) val[i]/1000.0, i);
 	 }
 	 exps.useAmp = AMP0;
@@ -616,6 +687,8 @@ int main (int argc, char *argv[])
          configExp( &globals, &exps);
          if (globals.debug)
             printExps( &exps);
+         if (globals.debug)
+            diagMessage("call pb_start_programming(%d)\n", PULSE_PROGRAM);
          pb_start_programming (PULSE_PROGRAM);
       }
       else if ( ! strcmp(r->inst,"PHASE_RESET") )
@@ -639,10 +712,18 @@ int main (int argc, char *argv[])
          double duration = atof(r->vals);
          if (duration > 0.0)
          {
+            if (globals.debug)
+               diagMessage("call pb_inst_radio_shape(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%g) = ",
+                                         0, PHASE090, PHASE000, 0,
+               TX_DISABLE, exps.phaseReset,
+               NO_TRIGGER, NO_SHAPE, AMP0, exps.mpsStatus,
+               exps.opCode, exps.opCodeData, duration * 1e9);
             pbRes = pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
                TX_DISABLE, exps.phaseReset,
                NO_TRIGGER, NO_SHAPE, AMP0, exps.mpsStatus,
                exps.opCode, exps.opCodeData, duration * 1e9);
+            if (globals.debug)
+               diagMessage("%d (for delay)\n", pbRes);
             exps.exp_time += duration;
             resetExp(pbRes, &exps);
          }
@@ -662,33 +743,70 @@ int main (int argc, char *argv[])
          {
             if (blank_delay > 0.0)
             {
+               if (globals.debug)
+                  diagMessage("call pb_inst_radio_shape(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%g) = ",
+                                            0, PHASE090, PHASE000, 0,
+                  TX_DISABLE, exps.phaseReset,
+                  NO_TRIGGER, NO_SHAPE, AMP0,
+                  AMP_UNBLANK + exps.mpsStatus,
+                  CONTINUE, NO_DATA, blank_delay * 1e9);
                pbRes = pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
                   TX_DISABLE, exps.phaseReset,
                   NO_TRIGGER, NO_SHAPE, AMP0,
                   AMP_UNBLANK + exps.mpsStatus,
                   CONTINUE, NO_DATA, blank_delay * 1e9);
+               if (globals.debug)
+                  diagMessage("%d (for blank_delay > 0)\n", pbRes);
                exps.exp_time += blank_delay;
             }
             if (ringdown_delay > 0.0)
             {
+               if (globals.debug)
+                  diagMessage("call pb_inst_radio_shape(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%g) = ",
+                                            0, PHASE090, PHASE000, iphase,
+                  TX_ENABLE, exps.phaseReset,
+                  NO_TRIGGER, exps.useShape, exps.useAmp,
+		            AMP_UNBLANK + exps.mpsStatus,
+                  CONTINUE, NO_DATA, duration * 1e9);
                pbRes = pb_inst_radio_shape (0, PHASE090, PHASE000, iphase,
                   TX_ENABLE, exps.phaseReset,
                   NO_TRIGGER, exps.useShape, exps.useAmp,
-		          AMP_UNBLANK + exps.mpsStatus,
+		            AMP_UNBLANK + exps.mpsStatus,
                   CONTINUE, NO_DATA, duration * 1e9);
+               if (globals.debug)
+               {
+                  diagMessage("%d (for ringdown_delay > 0)\n", pbRes);
+                  diagMessage("call pb_inst_radio_shape(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%g) = ",
+                                            0, PHASE090, PHASE000, 0,
+                  TX_DISABLE, exps.phaseReset,
+                  NO_TRIGGER, NO_SHAPE, AMP0,
+		            exps.mpsStatus,
+                  exps.opCode, exps.opCodeData, ringdown_delay * 1e9);
+               }
                pbRes = pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
                   TX_DISABLE, exps.phaseReset,
                   NO_TRIGGER, NO_SHAPE, AMP0,
-		          exps.mpsStatus,
+		            exps.mpsStatus,
                   exps.opCode, exps.opCodeData, ringdown_delay * 1e9);
+               if (globals.debug)
+                  diagMessage("%d (for ringdown_delay > 0)\n", pbRes);
             }
             else
             {
+               if (globals.debug)
+                  diagMessage("call pb_inst_radio_shape(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%g) = ",
+                                            0, PHASE090, PHASE000, iphase,
+                  TX_ENABLE, exps.phaseReset,
+                  NO_TRIGGER, exps.useShape, exps.useAmp,
+		            AMP_UNBLANK + exps.mpsStatus,
+                  exps.opCode, exps.opCodeData, duration * 1e9);
                pbRes = pb_inst_radio_shape (0, PHASE090, PHASE000, iphase,
                   TX_ENABLE, exps.phaseReset,
                   NO_TRIGGER, exps.useShape, exps.useAmp,
-		          AMP_UNBLANK + exps.mpsStatus,
+		            AMP_UNBLANK + exps.mpsStatus,
                   exps.opCode, exps.opCodeData, duration * 1e9);
+               if (globals.debug)
+                  diagMessage("%d (for ringdown_delay <= 0)\n", pbRes);
             }
             exps.exp_time += duration + ringdown_delay;
             resetExp(pbRes, &exps);
@@ -697,12 +815,22 @@ int main (int argc, char *argv[])
       else if ( ! strcmp(r->inst,"ACQUIRE") )
       {
          int recIndex = atoi(r->vals);
+         if (globals.debug)
+            diagMessage("call pb_inst_radio_shape(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%g) = ",
+                                              0, PHASE090, PHASE000, 0,
+               TX_DISABLE, exps.phaseReset,
+               DO_TRIGGER, NO_SHAPE, AMP0,
+               recReal[recIndex], recImag[recIndex], recSwap[recIndex],
+               RECV_UNBLANK + exps.mpsStatus,
+               exps.opCode, exps.opCodeData, exps.at * 1e6);
          pbRes = pb_inst_radio_shape_cyclops (0, PHASE090, PHASE000, 0,
                TX_DISABLE, exps.phaseReset,
                DO_TRIGGER, NO_SHAPE, AMP0,
                recReal[recIndex], recImag[recIndex], recSwap[recIndex],
                RECV_UNBLANK + exps.mpsStatus,
                exps.opCode, exps.opCodeData, exps.at * 1e6);
+         if (globals.debug)
+            diagMessage("%d (for acquire)\n", pbRes);
          exps.exp_time += exps.at * 1e-3;
          resetExp(pbRes, &exps);
       }
@@ -727,6 +855,13 @@ int main (int argc, char *argv[])
                END_LOOP, exps.loop, MIN_DELAY);
          exps.exp_time += MIN_DELAY * 1e-9;
  */
+          if (globals.debug)
+               diagMessage("call pb_inst_radio_shape(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%g) (done)\n",
+                              0, PHASE090, PHASE000, 0,
+               TX_DISABLE, NO_PHASE_RESET,
+               NO_TRIGGER, NO_SHAPE, AMP0,
+	           0,
+               STOP, NO_DATA, MIN_DELAY);
          pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
                TX_DISABLE, NO_PHASE_RESET,
                NO_TRIGGER, NO_SHAPE, AMP0,
@@ -734,9 +869,15 @@ int main (int argc, char *argv[])
                STOP, NO_DATA, MIN_DELAY);
          exps.exp_time += MIN_DELAY * 1e-9;
 
+          if (globals.debug)
+               diagMessage("call pb_stop_programming\n");
          pb_stop_programming();
 //         exps.exp_time *= exps.nt;
+          if (globals.debug)
+               diagMessage("call pb_reset\n");
          pb_reset();
+          if (globals.debug)
+               diagMessage("call pb_start\n");
          pb_start();
          globals.board_start = 1;
          if (getData( &globals, &exps))
@@ -762,6 +903,8 @@ int main (int argc, char *argv[])
          mtuneIncr = width / (double) (globals.complex_points - 1);
          exps.exp_time = 2.0 * MTUNE_DELAY * 1e-9 * globals.complex_points + delay;
          exps.nt = 1;
+         if (globals.debug)
+               diagMessage("call pb_stop_programming MTUNE case\n");
          pb_stop_programming();
          while ( 1 == 1)
          {
@@ -909,9 +1052,17 @@ int main (int argc, char *argv[])
       r = r->next;
    }
    if (globals.board_start)
+   {
+      if (globals.debug)
+         diagMessage("call pb_stop\n");
       pb_stop();
+   }
    if (globals.board_open)
+   {
+      if (globals.debug)
+         diagMessage("call pb_close\n");
       pb_close();
+   }
    diagMessage("call endComm\n");
    endComm();
    if (globals.real)

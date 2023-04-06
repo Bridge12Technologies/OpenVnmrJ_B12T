@@ -1,0 +1,53 @@
+" Bridge12 macro"
+
+$attr=''
+$val=''
+rm('-f',curexp+'/jcampArray'):$e
+readfile($1,'$attr','$val','JCAMP','local'):$num
+write('reset',curexp+'/jcampPar')
+$i=0
+while $i<$num do
+  $i=$i+1
+  write('file',curexp+'/jcampPar','%s %s',$attr[$i],$val[$i])
+endwhile
+exists(curexp+'/jcampArray','file'):$e
+if $e then
+  $t1=0
+  $val=''
+  readfile(curexp+'/jcampArray','$t1','$val','','local'):$num
+  create('t1','real','current',0):$e
+  create('t1','real','processed',0):$e
+  $i=0
+  while ($i < $num) do
+    $i=$i+1
+    write('line3',curexp+'/jcampData.%d',$i):$file
+    if ($i = 1) then
+      t1=$t1[$i]
+      setvalue('t1',$t1[$i],0,'processed')
+      makefid($file,0,'float','rev')
+    else
+      t1[$i]=$t1[$i]
+      setvalue('t1',$t1[$i],$i,'processed')
+      makefid($file,$i,'float','rev')
+    endif
+  endwhile
+  array='t1'
+  setvalue('array',array,'processed')
+  calcdim
+  setvalue('arraydim',arraydim,'processed')
+  
+else
+  if ($# = 2) then
+    $index=$2
+    if ($index = 1) then $index = 0 endif
+  else
+    $index=0
+  endif
+  makefid(curexp+'/jcampData.1',$index,'float','rev')
+  if ($index > 1) then
+    setvalue('array',array,'processed')
+    setvalue('arraydim',$index,'processed')
+  endif
+endif
+  
+
