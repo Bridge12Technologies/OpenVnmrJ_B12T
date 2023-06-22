@@ -108,6 +108,8 @@ static FILE *debugFile = NULL;
 static int recReal[4] = {1,1,0,0};
 static int recImag[4] = {1,0,0,1};
 static int recSwap[4] = {0,1,0,1};
+int *re = NULL;
+int *im = NULL;
 
 void diagMessage(const char *format, ...)
 {
@@ -422,11 +424,24 @@ int getData(Globals *globals, Exps *exps)
 
    if (globals->debug)
       diagMessage("call pb_get_data(%d, real, imag)\n", globals->complex_points);
-   if( pb_get_data (globals->complex_points, globals->real, globals->imag) < 0 )
+   if( pb_get_data (globals->complex_points, re, im) < 0 )
    {
       diagMessage("Failed to retrieve data\n");
       dataError( & (globals->InfoFile[0]), ct, exps->elem);
       return -1;
+   }
+   globals->real = re;
+   globals->imag = im;
+   if (globals->debug)
+   {
+      FILE *fd;
+      int i;
+      fd = fopen("/vnmr/tmp/b12data","w");
+      for (i=0; i< globals->complex_points; i++)
+      {
+         fprintf(fd,"%d %d\n", re[i], im[i]);
+      }
+      fclose(fd);
    }
    diagMessage("save data to %s\n",globals->DataDir);
    return(0);
@@ -566,11 +581,11 @@ int main (int argc, char *argv[])
       else if ( ! strcmp(r->inst,"NUMBER_POINTS") )
       {
          globals.complex_points = atoi(r->vals) / 2;
-         if (globals.real == NULL)
+         if (re == NULL)
          {
             diagMessage("malloc %d ints\n",globals.complex_points );
-            globals.real = (int *)malloc(sizeof(int) * globals.complex_points);
-            globals.imag = (int *)malloc(sizeof(int) * globals.complex_points);
+            re = (int *)malloc(sizeof(int) * globals.complex_points);
+            im = (int *)malloc(sizeof(int) * globals.complex_points);
          }
       }
       else if ( ! strcmp(r->inst,"ADC_FREQUENCY") )
@@ -1065,10 +1080,10 @@ int main (int argc, char *argv[])
    }
    diagMessage("call endComm\n");
    endComm();
-   if (globals.real)
-      free(globals.real);
-   if (globals.imag)
-      free(globals.imag);
+   if (re)
+      free(re);
+   if (im)
+      free(im);
    r = PSstart;
    while ( (r != NULL))
    {
