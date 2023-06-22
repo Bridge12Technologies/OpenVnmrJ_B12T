@@ -1,0 +1,29 @@
+"macro to control the SCN microcontroller"
+
+$action = 'extamp'
+$argument = ''
+
+$returnvalue='No Action done!'
+
+if ($# < 1)then
+    return('None')
+endif
+
+if ($# > 0) then
+    $action = $1
+endif
+
+if ($# > 1) then
+    $argument = $2
+endif
+if ($# > 2) then
+    $argument2 = $3
+    $shellcmd='python3 /vnmr/bin/B12SCNControl.py '+$action+' '+$argument+' '+$argument2
+    shell($shellcmd):$returnvalue
+else
+    $shellcmd='python3 /vnmr/bin/B12SCNControl.py '+$action+' '+$argument
+    shell($shellcmd):$returnvalue
+    return($returnvalue)
+endif
+
+return($returnvalue)
