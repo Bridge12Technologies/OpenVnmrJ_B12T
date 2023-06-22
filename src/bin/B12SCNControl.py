@@ -69,16 +69,15 @@ def sendCMD(comports:list,cmd:list,sendCheck:str='',nmax=max(int(2*len(success))
         raise ValueError
     data="-1"
     for port in comports:
-        serial=serial.Serial(timeout=0.025)
-        serial.port=port
-        serial.baudrate=115200 #B12T standard
-        with serial as ser:
+        serialC=serial.Serial(timeout=0.025)
+        serialC.port=port
+        serialC.baudrate=115200 #B12T standard
+        with serialC as ser:
             for ind,sub_cmd in enumerate(cmd):
-                ser.write(sub_cmd.encode())
-                data=ser.read(nmax).decode()
+                serialC.write(sub_cmd.encode())
+                data=serialC.read(nmax).decode()
                 if not (sendCheck in data):
                     exit_error_flag+=2**ind
-            ser.close()
     return data,exit_error_flag
 
 
