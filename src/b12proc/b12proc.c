@@ -643,7 +643,7 @@ int main (int argc, char *argv[])
 	 char cmd[512];
 	 int ret __attribute__((unused));
 
-	 sprintf(cmd,"/vnmr/bin/mcl_RUDAT %s\n",r->vals);
+	 sprintf(cmd,"/vnmr/bin/B12ATTNControl %s\n",r->vals);
          diagMessage("set atten with %s\n", cmd);
          ret = system(cmd);
       }
