@@ -45,13 +45,14 @@ extern void sendExpMsg(char *cmd);
 #define MIN_DELAY       70.0  // nanosec
 #define MTUNE_DELAY     1000.0 // nanosec
 
-#define MPS_BIT  0
-#define RECV_BIT 1
-#define AMP_BIT  2
+#define MPS_BIT      0
+#define RECV_BIT     1
+#define AMP_BIT      2
+#define AMPBLANK_BIT 3
 
 #define RECV_UNBLANK    (1 << RECV_BIT)
 #define AMP_UNBLANK     (1 << AMP_BIT)
-#define FLAG3           (1 << 3)
+#define OUTBLANK        (1 << AMPBLANK_BIT)
 
 struct _PSelem {
                  char inst[64];
@@ -836,13 +837,13 @@ int main (int argc, char *argv[])
                TX_DISABLE, exps.phaseReset,
                DO_TRIGGER, NO_SHAPE, AMP0,
                recReal[recIndex], recImag[recIndex], recSwap[recIndex],
-               RECV_UNBLANK + exps.mpsStatus,
+               RECV_UNBLANK + exps.mpsStatus + OUTBLANK,
                exps.opCode, exps.opCodeData, exps.at * 1e6);
          pbRes = pb_inst_radio_shape_cyclops (0, PHASE090, PHASE000, 0,
                TX_DISABLE, exps.phaseReset,
                DO_TRIGGER, NO_SHAPE, AMP0,
                recReal[recIndex], recImag[recIndex], recSwap[recIndex],
-               RECV_UNBLANK + exps.mpsStatus,
+               RECV_UNBLANK + exps.mpsStatus + OUTBLANK,
                exps.opCode, exps.opCodeData, exps.at * 1e6);
          if (globals.debug)
             diagMessage("%d (for acquire)\n", pbRes);
@@ -941,36 +942,36 @@ int main (int argc, char *argv[])
                pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
                   TX_DISABLE, NO_PHASE_RESET,
                   NO_TRIGGER, NO_SHAPE, AMP0,
-                  FLAG3,
+                  0,
                   CONTINUE, NO_DATA, delay * 1e9);
             // Loop np times, each time acquire one data point
             loops = pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
                   TX_DISABLE, PHASE_RESET,
                   NO_TRIGGER, exps.useShape, exps.useAmp,
-		          FLAG3 + AMP_UNBLANK + exps.mpsStatus,
+		          AMP_UNBLANK + exps.mpsStatus,
                   LOOP, globals.complex_points, MIN_DELAY);
             // Wait for new frequency to be set
             pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
                   TX_DISABLE, NO_PHASE_RESET,
                   NO_TRIGGER, exps.useShape, exps.useAmp,
-		          FLAG3 + AMP_UNBLANK + exps.mpsStatus,
+		          AMP_UNBLANK + exps.mpsStatus,
                   WAIT, NO_DATA, MIN_DELAY);
             // Delay for frequency to settle
             pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
                   TX_ENABLE, NO_PHASE_RESET,
                   NO_TRIGGER, exps.useShape, exps.useAmp,
-		          FLAG3 + AMP_UNBLANK + exps.mpsStatus,
+		          AMP_UNBLANK + exps.mpsStatus,
                   CONTINUE, NO_DATA, MTUNE_DELAY);
             // Acquire one data point and loop to top
             pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
                   TX_ENABLE, NO_PHASE_RESET,
                   DO_TRIGGER, exps.useShape, exps.useAmp,
-		          FLAG3 + RECV_UNBLANK + AMP_UNBLANK + exps.mpsStatus,
+		          RECV_UNBLANK + AMP_UNBLANK + exps.mpsStatus,
                   END_LOOP, loops, MTUNE_DELAY);
             pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
                   TX_DISABLE, NO_PHASE_RESET,
                   NO_TRIGGER, NO_SHAPE, AMP0,
-		          FLAG3,
+		          0,
                   STOP, NO_DATA, MIN_DELAY);
             pb_stop_programming();
             pb_reset();
