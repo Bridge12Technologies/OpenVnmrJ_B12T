@@ -52,9 +52,13 @@ def get_comport(filename:str,searchCMD:str='idn?\n',checkString:str=checkString,
         PossiblePorts=serial.tools.list_ports.comports()
         comports=[]
         for portInfo in PossiblePorts:
-            with serial.Serial(timeout=0.025) as ser:
+            with serial.Serial(timeout=0.025,write_timeout=1) as ser:
                 ser.port=portInfo.device
-                ser.write(searchCMD.encode())
+                try:
+                    ser.write(searchCMD.encode())
+                except serial.serialutil.SerialTimeoutException:
+                    ser.close()
+                    continue
                 data=ser.read(nmax).decode('utf-8')
                 if checkString in data:
                     comports.append(portInfo.device)
@@ -69,15 +73,21 @@ def sendCMD(comports:list,cmd:list,sendCheck:str='',nmax=max(int(2*len(success))
         raise ValueError
     data="-1"
     for port in comports:
-        serialC=serial.Serial(timeout=0.025)
+        serialC=serial.Serial(timeout=0.025,write_timeout=0.025)
         serialC.port=port
         serialC.baudrate=115200 #B12T standard
         with serialC as ser:
             for ind,sub_cmd in enumerate(cmd):
-                serialC.write(sub_cmd.encode())
+                try:
+                    serialC.write(sub_cmd.encode())
+                except serial.serialutil.SerialTimeoutException:
+                    serialC.reset_output_buffer()
+                    serialC.close()
+                    return data,-998
                 data=serialC.read(nmax).decode()
                 if not (sendCheck in data):
-                    exit_error_flag+=2**ind
+                    exit_error_flag-=2**ind
+                serialC.reset_input_buffer()
     return data,exit_error_flag
 
 
@@ -98,12 +108,12 @@ except Exception as e:
     except Exception as e2:
         warnings.warn("Exception {0} occured when trying to write to rechecked comports {1}, setting of the device failed".format(e,comports))
         if exit_error_flag==0:
-            exit_error_flag=999
+            exit_error_flag=-999
 
-if exit_error_flag>0:
+if exit_error_flag<0:
     print(str(exit_error_flag))
     warnings.warn("exit_error_flag was raised, setting of device failed")
-    exit(exit_error_flag)
+    exit(1)
 else:
     print(data.strip().strip("'").strip('"').strip('"').strip("'").strip())
     exit(0)
