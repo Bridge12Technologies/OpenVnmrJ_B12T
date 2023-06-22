@@ -7,9 +7,9 @@ import sys
 cwd = os.getcwd()
 
 # get the envirionment
-#env = Environment()
+env = Environment()
 
-#env.Execute('gcc -o mcl_RUDAT RUDAT.c libusb/*.c libhid/*.c > /dev/null 2>&1')
+env.Execute('gcc -o mcl_RUDAT RUDAT.c libusb/*.c libhid/*.c > /dev/null 2>&1')
 
 # define with absolute path where built files will be copied
 vnmrInstallPath = os.path.join(cwd, os.pardir, os.pardir, os.pardir, 'vnmr', 'bin')
@@ -19,3 +19,4 @@ if not os.path.exists(vnmrInstallPath):
    os.makedirs(vnmrInstallPath)
 
 Execute('cp B12ATTNControl.py ../../../vnmr/bin/B12ATTNControl')
+
