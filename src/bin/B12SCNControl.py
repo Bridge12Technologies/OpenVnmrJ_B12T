@@ -54,7 +54,6 @@ def get_comport(filename:str,searchCMD:str='idn?\n',checkString:str=checkString,
         for portInfo in PossiblePorts:
             with serial.Serial(timeout=0.025) as ser:
                 ser.port=portInfo.device
-                ser.open()
                 ser.write(searchCMD.encode())
                 data=ser.read(nmax).decode('utf-8')
                 if checkString in data:
@@ -68,11 +67,12 @@ def sendCMD(comports:list,cmd:list,sendCheck:str='',nmax=max(int(2*len(success))
     exit_error_flag=0
     if len(comports)==0:
         raise ValueError
-    data='-1'
+    data="-1"
     for port in comports:
-        with serial.Serial(timeout=0.025) as ser:
-            ser.port=port
-            ser.open()
+        serial=serial.Serial(timeout=0.025)
+        serial.port=port
+        serial.baudrate=115200 #B12T standard
+        with serial as ser:
             for ind,sub_cmd in enumerate(cmd):
                 ser.write(sub_cmd.encode())
                 data=ser.read(nmax).decode()
@@ -80,6 +80,11 @@ def sendCMD(comports:list,cmd:list,sendCheck:str='',nmax=max(int(2*len(success))
                     exit_error_flag+=2**ind
             ser.close()
     return data,exit_error_flag
+
+
+###
+### MAIN FUNCTIONALIY
+###
 
 comports=get_comport(comport_file,searchCMD=connectID,checkString=checkString)
 exit_error_flag=0
@@ -97,9 +102,9 @@ except Exception as e:
             exit_error_flag=999
 
 if exit_error_flag>0:
-    print(exit_error_flag)
+    print(str(exit_error_flag))
     warnings.warn("exit_error_flag was raised, setting of device failed")
     exit(exit_error_flag)
 else:
-    print(data)
+    print(data.strip().strip("'").strip('"').strip('"').strip("'").strip())
     exit(0)
