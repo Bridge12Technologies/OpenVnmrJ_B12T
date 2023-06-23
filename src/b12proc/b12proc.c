@@ -729,11 +729,13 @@ int main (int argc, char *argv[])
          if (duration > 0.0)
          {
             if (globals.debug)
+            {
                diagMessage("call pb_inst_radio_shape(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%g) = ",
                                          0, PHASE090, PHASE000, 0,
                TX_DISABLE, exps.phaseReset,
                NO_TRIGGER, NO_SHAPE, AMP0, exps.mpsStatus,
                exps.opCode, exps.opCodeData, duration * 1e9);
+            }
             pbRes = pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
                TX_DISABLE, exps.phaseReset,
                NO_TRIGGER, NO_SHAPE, AMP0, exps.mpsStatus,
@@ -760,12 +762,14 @@ int main (int argc, char *argv[])
             if (blank_delay > 0.0)
             {
                if (globals.debug)
+               {
                   diagMessage("call pb_inst_radio_shape(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%g) = ",
                                             0, PHASE090, PHASE000, 0,
                   TX_DISABLE, exps.phaseReset,
                   NO_TRIGGER, NO_SHAPE, AMP0,
                   AMP_UNBLANK + exps.mpsStatus,
                   CONTINUE, NO_DATA, blank_delay * 1e9);
+               }
                pbRes = pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
                   TX_DISABLE, exps.phaseReset,
                   NO_TRIGGER, NO_SHAPE, AMP0,
@@ -778,12 +782,14 @@ int main (int argc, char *argv[])
             if (ringdown_delay > 0.0)
             {
                if (globals.debug)
+               {
                   diagMessage("call pb_inst_radio_shape(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%g) = ",
                                             0, PHASE090, PHASE000, iphase,
                   TX_ENABLE, exps.phaseReset,
                   NO_TRIGGER, exps.useShape, exps.useAmp,
 		            AMP_UNBLANK + exps.mpsStatus,
                   CONTINUE, NO_DATA, duration * 1e9);
+               }
                pbRes = pb_inst_radio_shape (0, PHASE090, PHASE000, iphase,
                   TX_ENABLE, exps.phaseReset,
                   NO_TRIGGER, exps.useShape, exps.useAmp,
@@ -805,24 +811,30 @@ int main (int argc, char *argv[])
 		            exps.mpsStatus,
                   exps.opCode, exps.opCodeData, ringdown_delay * 1e9);
                if (globals.debug)
+               {
                   diagMessage("%d (for ringdown_delay > 0)\n", pbRes);
+               }
             }
             else
             {
                if (globals.debug)
+               {
                   diagMessage("call pb_inst_radio_shape(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%g) = ",
                                             0, PHASE090, PHASE000, iphase,
                   TX_ENABLE, exps.phaseReset,
                   NO_TRIGGER, exps.useShape, exps.useAmp,
 		            AMP_UNBLANK + exps.mpsStatus,
                   exps.opCode, exps.opCodeData, duration * 1e9);
+               }
                pbRes = pb_inst_radio_shape (0, PHASE090, PHASE000, iphase,
                   TX_ENABLE, exps.phaseReset,
                   NO_TRIGGER, exps.useShape, exps.useAmp,
 		            AMP_UNBLANK + exps.mpsStatus,
                   exps.opCode, exps.opCodeData, duration * 1e9);
                if (globals.debug)
+               {
                   diagMessage("%d (for ringdown_delay <= 0)\n", pbRes);
+               }
             }
             exps.exp_time += duration + ringdown_delay;
             resetExp(pbRes, &exps);
@@ -832,6 +844,7 @@ int main (int argc, char *argv[])
       {
          int recIndex = atoi(r->vals);
          if (globals.debug)
+         {
             diagMessage("call pb_inst_radio_shape(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%g) = ",
                                               0, PHASE090, PHASE000, 0,
                TX_DISABLE, exps.phaseReset,
@@ -839,6 +852,7 @@ int main (int argc, char *argv[])
                recReal[recIndex], recImag[recIndex], recSwap[recIndex],
                RECV_UNBLANK + exps.mpsStatus + OUTBLANK,
                exps.opCode, exps.opCodeData, exps.at * 1e6);
+         }
          pbRes = pb_inst_radio_shape_cyclops (0, PHASE090, PHASE000, 0,
                TX_DISABLE, exps.phaseReset,
                DO_TRIGGER, NO_SHAPE, AMP0,
@@ -846,9 +860,11 @@ int main (int argc, char *argv[])
                RECV_UNBLANK + exps.mpsStatus + OUTBLANK,
                exps.opCode, exps.opCodeData, exps.at * 1e6);
          if (globals.debug)
+         {
             diagMessage("%d (for acquire)\n", pbRes);
          exps.exp_time += exps.at * 1e-3;
          resetExp(pbRes, &exps);
+         }
       }
       else if ( ! strcmp(r->inst,"STATUS") )
       {
@@ -872,12 +888,14 @@ int main (int argc, char *argv[])
          exps.exp_time += MIN_DELAY * 1e-9;
  */
           if (globals.debug)
+          {
                diagMessage("call pb_inst_radio_shape(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%g) (done)\n",
                               0, PHASE090, PHASE000, 0,
                TX_DISABLE, NO_PHASE_RESET,
                NO_TRIGGER, NO_SHAPE, AMP0,
 	           0,
                STOP, NO_DATA, MIN_DELAY);
+          }
          pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
                TX_DISABLE, NO_PHASE_RESET,
                NO_TRIGGER, NO_SHAPE, AMP0,
@@ -886,11 +904,15 @@ int main (int argc, char *argv[])
          exps.exp_time += MIN_DELAY * 1e-9;
 
           if (globals.debug)
-               diagMessage("call pb_stop_programming\n");
+          {
+             diagMessage("call pb_stop_programming\n");
+          }
          pb_stop_programming();
 //         exps.exp_time *= exps.nt;
           if (globals.debug)
+          {
                diagMessage("call pb_reset\n");
+          }
          pb_reset();
           if (globals.debug)
                diagMessage("call pb_start\n");
@@ -920,7 +942,9 @@ int main (int argc, char *argv[])
          exps.exp_time = 2.0 * MTUNE_DELAY * 1e-9 * globals.complex_points + delay;
          exps.nt = 1;
          if (globals.debug)
+         {
                diagMessage("call pb_stop_programming MTUNE case\n");
+         }
          pb_stop_programming();
          while ( 1 == 1)
          {
@@ -939,11 +963,13 @@ int main (int argc, char *argv[])
             pb_start_programming (PULSE_PROGRAM);
             // Initial delay to set RF routing
             if (ct == 1)
+            {
                pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
                   TX_DISABLE, NO_PHASE_RESET,
                   NO_TRIGGER, NO_SHAPE, AMP0,
                   0,
                   CONTINUE, NO_DATA, delay * 1e9);
+            }
             // Loop np times, each time acquire one data point
             loops = pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
                   TX_DISABLE, PHASE_RESET,
