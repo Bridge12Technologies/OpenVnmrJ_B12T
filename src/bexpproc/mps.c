@@ -344,7 +344,8 @@ int recvMPS(char *msg, size_t len)
 
    msg[0] = '\0';
    sleepMilliSeconds(2);
-   while (loops < 40)  // maximum I have seen is 11 loops
+   // change loop maximum to 60 for now, later change it with config file!
+   while (loops < 60)  // maximum I have seen is 11 loops
    {
       bytes = 0;
       ioctl(mpsFD, FIONREAD, &bytes);

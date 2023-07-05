@@ -1007,6 +1007,7 @@ int main (int argc, char *argv[])
             aborted = 0;
             while (incr < globals.complex_points )
             {
+               //this will take miliseconds!
                while (!(pb_read_status() & STATUS_WAITING))
                {
                   sleepMicroSeconds(2);
