@@ -54,6 +54,7 @@ def get_comport(filename:str,searchCMD:str='idn?\n',checkString:str=checkString,
         for portInfo in PossiblePorts:
             with serial.Serial(timeout=0.025,write_timeout=1) as ser:
                 ser.port=portInfo.device
+                ser.open()
                 try:
                     ser.write(searchCMD.encode())
                 except serial.serialutil.SerialTimeoutException:

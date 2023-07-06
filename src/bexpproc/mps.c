@@ -343,9 +343,10 @@ int recvMPS(char *msg, size_t len)
    int loops = 0;
 
    msg[0] = '\0';
-   sleepMilliSeconds(2);
-   // change loop maximum to 60 for now, later change it with config file!
-   while (loops < 60)  // maximum I have seen is 11 loops
+   // changed from 2 to 10ms
+   sleepMilliSeconds(10);
+   // change loop maximum to 150 for now, later change it with config file!
+   while (loops < 150)  // maximum I have seen is 11 loops
    {
       bytes = 0;
       ioctl(mpsFD, FIONREAD, &bytes);
@@ -364,7 +365,7 @@ int recvMPS(char *msg, size_t len)
    }
    if (statTuneFlag)
       DPRINT2(1,"recvMPS %s loops= %d\n",msg,loops);
-   return( (loops < 40) ? 0 : -1);
+   return( (loops < 150) ? 0 : -1);
 }
 
 static void recvTuneMPS(FILE *fd)
@@ -569,7 +570,7 @@ void acqMPS(int stage)
          return;
       if ( !recvMPS(msg, sizeof(msg)))
          rfstate = atoi(msg);
-
+      //no sleepMilliSeconds()
       if (sendMPS("wgstatus?\n"))
          return;
       if ( !recvMPS(msg, sizeof(msg)))

@@ -960,7 +960,7 @@ int main (int argc, char *argv[])
             pb_start_programming(FREQ_REGS);
             pb_set_freq(mtuneStart);
             pb_stop_programming();
-            pb_start_programming (PULSE_PROGRAM);
+            pb_start_programming(PULSE_PROGRAM);
             // Initial delay to set RF routing
             if (ct == 1)
             {
@@ -993,6 +993,12 @@ int main (int argc, char *argv[])
                   TX_ENABLE, NO_PHASE_RESET,
                   DO_TRIGGER, exps.useShape, exps.useAmp,
 		          RECV_UNBLANK + AMP_UNBLANK + exps.mpsStatus,
+                  CONTINUE, NO_DATA, MTUNE_DELAY);
+            // Add some small delay with nothing
+            pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
+                  TX_DISABLE, NO_PHASE_RESET,
+                  NO_TRIGGER, exps.useShape, exps.useAmp,
+		          AMP_UNBLANK + exps.mpsStatus,
                   END_LOOP, loops, MTUNE_DELAY);
             pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
                   TX_DISABLE, NO_PHASE_RESET,
