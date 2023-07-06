@@ -46,6 +46,8 @@ void mpsTuneData(int init, char *outfile0, int np0);
 static int mpsFD = -1;
 static int statusInterval;
 static int statTuneFlag;
+static int wgstate=0;
+static int rfstate=0;
 int rfSweepDwell = 100;
 int mpsCmdOk = 0;
 
@@ -558,14 +560,13 @@ void mpsPower(int power)
 
 void acqMPS(int stage)
 {
-   static int wgstate;
-   static int rfstate;
+   //here was static int declaration (without initialization) -> now at top
    char msg[512];
 
       DPRINT1(1,"acqMPS stage= %d\n", stage);
    if (stage == 0)  // initialization prior to acquisition
    {
-      wgstate = rfstate = 0;
+      //wgstate = rfstate = 0;
       if (sendMPS("rfstatus?\n"))
          return;
       if ( !recvMPS(msg, sizeof(msg)))

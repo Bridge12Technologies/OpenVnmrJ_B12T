@@ -60,6 +60,7 @@ def get_comport(filename:str,searchCMD:str='idn?\n',checkString:str=checkString,
                 except serial.serialutil.SerialTimeoutException:
                     ser.close()
                     continue
+                time.sleep(0.01) #sleep 10ms to get answer
                 data=ser.read(nmax).decode('utf-8')
                 if checkString in data:
                     comports.append(portInfo.device)

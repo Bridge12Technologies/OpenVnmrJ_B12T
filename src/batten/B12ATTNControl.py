@@ -61,6 +61,7 @@ def get_comport(filename:str,searchCMD:str='idn?\n',checkString:str=checkString,
                 except serial.serialutil.SerialTimeoutException:
                     ser.close()
                     continue
+                time.sleep(0.01) #to get a longer answer
                 n_waiting=ser.in_waiting
                 data=ser.read(n_waiting).decode('utf-8')
                 if checkString in data:
