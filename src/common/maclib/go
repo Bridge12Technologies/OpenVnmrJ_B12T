@@ -32,17 +32,6 @@ while ($i<$#) do
 endwhile
 $args = 'Acq(\'' + $args + '\')'
 
-" write('line3',$args)"
-
-
-"
-$at_delay=''
-format(at*1000+1,1,0):$at_delay
-$nt_value=''
-format(nt,1,0):$nt_value
-B12SCNControl('outblank '+$at_delay+' '+$nt_value+' 100')
-"
-
 $c1=0
 $args = $args+':$c1'
 exec($args):$e
