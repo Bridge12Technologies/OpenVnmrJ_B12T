@@ -51,6 +51,48 @@ static int rfstate=0;
 int rfSweepDwell = 100;
 int mpsCmdOk = 0;
 
+
+const char logfile[] = "/vnmr/tmp/mpslog.txt";
+
+int writeToLog(char * charArr, char * infoArr, int AddData)
+{
+   // writes to hardcoded file logfile, always appends
+   FILE * fd = fopen(logfile,"a");
+   if (fd == NULL)
+   {
+      return -1;
+   }
+   fprintf(fd,"%s:%s, AddData:%d\n",infoArr,charArr,AddData);
+
+   int closeSuccess = fclose(fd);
+   if (closeSuccess!=0)
+   {
+      return -1;
+   }
+   return 0;
+   /*
+   int fd = open(logfile, O_APPEND | O_CREAT);
+   if (fd != -1)
+   {
+      int writeResult = write(fd,charArr, strlen(charArr));
+      if (writeResult==-1)
+      {
+         return -1;
+      }
+   }
+   else
+   {
+      return -1;
+   }
+   int closeSucess = close (fd);
+   if (closeSucess <0)
+   {
+      return -1;
+   }
+   return 0;
+   */
+}
+
 int  getStatrateMPS()
 {
    return(statusInterval);
@@ -336,6 +378,8 @@ int sendMPS(const char *msg)
       bytes = read(mpsFD,err, sizeof(err)-1);
    }
    bytes = write(mpsFD, msg, strlen(msg) );
+   // we can distinguish between send and rcv because there should be a questionmark?
+   writeToLog(msg,"SENDMPS",bytes);
    return((bytes == strlen(msg)) ? 0 : -1);
 }
 
@@ -367,6 +411,7 @@ int recvMPS(char *msg, size_t len)
    }
    if (statTuneFlag)
       DPRINT2(1,"recvMPS %s loops= %d\n",msg,loops);
+   writeToLog(msg,"RECVMPS",loops);
    return( (loops < 150) ? 0 : -1);
 }
 
