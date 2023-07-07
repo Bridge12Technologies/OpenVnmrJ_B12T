@@ -52,7 +52,7 @@ int rfSweepDwell = 100;
 int mpsCmdOk = 0;
 
 
-const char logfile[] = "/vnmr/tmp/mpslog.txt";
+char logfile[] = "/vnmr/tmp/mpslog.txt";
 
 int writeToLog(char * charArr, char * infoArr, int AddData)
 {
@@ -372,6 +372,7 @@ int sendMPS(const char *msg)
       return(-1);
    // check if any characters in read buffer
    bytes = 0;
+   writeToLog("Before send","SENDMPS",0);
    ioctl(mpsFD, FIONREAD, &bytes);
    if (bytes)
    {
@@ -389,6 +390,7 @@ int recvMPS(char *msg, size_t len)
    int loops = 0;
 
    msg[0] = '\0';
+   writeToLog("Before receive","RECVMPS",0);
    // changed from 2 to 10ms
    sleepMilliSeconds(10);
    // change loop maximum to 150 for now, later change it with config file!

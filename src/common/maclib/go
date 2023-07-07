@@ -1,4 +1,5 @@
 "macro go"
+" B12T V0.2 "
 
 $pseq=systemdir+'/psglib/'+seqfil
 exists($pseq,'file'):$e
