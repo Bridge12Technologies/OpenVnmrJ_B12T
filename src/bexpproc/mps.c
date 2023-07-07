@@ -53,6 +53,9 @@ int mpsCmdOk = 0;
 
 
 char logfile[] = "/vnmr/tmp/mpslog.txt";
+static int logcall =0;
+
+
 
 int writeToLog(char * charArr, char * infoArr, int AddData)
 {
@@ -62,7 +65,7 @@ int writeToLog(char * charArr, char * infoArr, int AddData)
    {
       return -1;
    }
-   fprintf(fd,"%s:%s, AddData:%d\n",infoArr,charArr,AddData);
+   fprintf(fd,"%s:%sAddData (loops):%d\n",infoArr,charArr,AddData);
 
    int closeSuccess = fclose(fd);
    if (closeSuccess!=0)
@@ -366,6 +369,10 @@ int sendMPS(const char *msg)
    ssize_t bytes;
    char err[512];
 
+   int rec_call = logcall;
+   char send_arr[32];
+   sprintf(send_arr,"SENDMPS (call: %d)",rec_call);
+
    if (statTuneFlag)
       DPRINT1(1,"sendMPS %s",msg);
    if (mpsFD < 0)
@@ -381,6 +388,7 @@ int sendMPS(const char *msg)
    bytes = write(mpsFD, msg, strlen(msg) );
    // we can distinguish between send and rcv because there should be a questionmark?
    writeToLog(msg,"SENDMPS",bytes);
+   logcall++;
    return((bytes == strlen(msg)) ? 0 : -1);
 }
 
@@ -389,8 +397,13 @@ int recvMPS(char *msg, size_t len)
    ssize_t bytes;
    int loops = 0;
 
+
+   int rec_call = logcall;
+   char rec_arr[32];
+   sprintf(rec_arr,"RECVMPS (call: %d)",rec_call);
+
    msg[0] = '\0';
-   writeToLog("Before receive","RECVMPS",0);
+   writeToLog("Before receive",rec_arr,0);
    // changed from 2 to 10ms
    sleepMilliSeconds(10);
    // change loop maximum to 150 for now, later change it with config file!
@@ -413,7 +426,8 @@ int recvMPS(char *msg, size_t len)
    }
    if (statTuneFlag)
       DPRINT2(1,"recvMPS %s loops= %d\n",msg,loops);
-   writeToLog(msg,"RECVMPS",loops);
+   writeToLog(msg,rec_arr,loops);
+   logcall++;
    return( (loops < 150) ? 0 : -1);
 }
 
@@ -617,12 +631,20 @@ void acqMPS(int stage)
       if (sendMPS("rfstatus?\n"))
          return;
       if ( !recvMPS(msg, sizeof(msg)))
+      {
+         writeToLog("RFSTATE","stage 0, recvMPS succeeded (635), befire atoi()",rfstate);
          rfstate = atoi(msg);
+         writeToLog("RFSTATE","stage 0, recvMPS succeeded (637)",rfstate);
+      }
       //no sleepMilliSeconds()
       if (sendMPS("wgstatus?\n"))
          return;
       if ( !recvMPS(msg, sizeof(msg)))
-         wgstate = atoi(msg);
+         {
+            writeToLog("WGSTATE","stage 0, recvMPS succeeded (644, before atoi()",wgstate);
+            wgstate = atoi(msg);
+            writeToLog("WGSTATE","stage 0, recvMPS succeeded (646)",wgstate);
+         }
       mpsCmdOk = (rfstate == 2);
 
 //      if (sendMPS("wgstatus 1\n"))
@@ -641,7 +663,11 @@ void acqMPS(int stage)
          return;
       setMpsWgstatus( wgstate );
       if (wgstate == 0)
-         rfstate = 0;
+         {
+            rfstate = 0;
+            writeToLog("RFSTATE","stage 1, rfstate set to zero because wgstate is zero (668)",rfstate);
+         }
+
       sprintf(msg,"rfstatus %d\n",rfstate);
       sleepMilliSeconds(10);
       if (sendMPS(msg))
