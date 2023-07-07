@@ -367,7 +367,8 @@ int recvMPS(char *msg, size_t len)
    }
    if (statTuneFlag)
       DPRINT2(1,"recvMPS %s loops= %d\n",msg,loops);
-   return( (loops < 150) ? 0 : -1);
+   size_t slen = strlen(msg);
+   return( ((loops < 150) && (slen>0)) ? 0 : -1);
 }
 
 static void recvTuneMPS(FILE *fd)
