@@ -465,7 +465,7 @@ void statusMPS(void)
    if ( !recvMPS(msg, sizeof(msg)))
       {
          wgstate = atoi(msg);
-         setMpsWgstatus(  );
+         setMpsWgstatus( wgstate );
 
       }
 
