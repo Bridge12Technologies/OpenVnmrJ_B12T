@@ -219,7 +219,7 @@ static int logcall =0;
 int writeToFile_RP(Globals globals, char* infoArr, int* RealData, int* ImagData, int len)
 {
    // writes to hardcoded file logfile, always appends
-   FILE * fd = fopen(globals->TuneDebug,"a");
+   FILE * fd = fopen(globals.TuneDebug,"a");
    if (fd == NULL)
    {
       return -1;
@@ -1117,7 +1117,7 @@ int main (int argc, char *argv[])
             {
                offset=(int)(point_i*n_points);
                pow=0;
-               for(int l=4,l<(n_points-4);l++)
+               for(int l=4;l<(n_points-4);l++)
                {
                   pow += sqrt( _square( (double) re[l+offset] ) + _square( (double) im[l+offset] ) );
                }
