@@ -79,6 +79,7 @@ struct _Globals {
                   char DataDir[512];
                   char InfoFile[512];
                   char CodePath[512];
+                  char TuneDebug[512];
                 };
 typedef struct _Globals Globals;
 
@@ -111,6 +112,9 @@ static int recImag[4] = {1,0,0,1};
 static int recSwap[4] = {0,1,0,1};
 int *re = NULL;
 int *im = NULL;
+
+// for tune mode
+int* abs_tune=NULL;
 
 void diagMessage(const char *format, ...)
 {
@@ -201,8 +205,32 @@ void setGlobalsDefault(Globals *globals, const char *path)
    strcpy(globals->InfoFile, path);
    strcpy(globals->CodePath, path);
    strcat(globals->CodePath,".Code");
-
+   strcpy(globals->TuneDebug,"/vnmr/tmp/RPOUT.txt");
 }
+
+
+static int logcall =0;
+
+int writeToFile_RP(Globals* globals, char* infoArr, int* RealData, int* ImagData, int len)
+{
+   // writes to hardcoded file logfile, always appends
+   FILE * fd = fopen(globals->TuneDebug,"a");
+   if (fd == NULL)
+   {
+      return -1;
+   }
+   fprintf(fd,"%s\n",infoArr);
+   for(int i=0,i<len,i++)
+   {
+      fprintf(fd,"%d %d\n",*(RealData+i),*(ImagData+i));
+   }
+   int closeSuccess = fclose(fd);
+   if (closeSuccess!=0)
+   {
+      return -1;
+   }
+   return 0;
+
 
 void printGlobals(Globals *globals)
 {
@@ -444,6 +472,9 @@ int getData(Globals *globals, Exps *exps)
       }
       fclose(fd);
    }
+   // debug output here:
+   //writeToFile_RP(globals, "#TUNE DATA", re, im, globals->complex_points);
+
    diagMessage("save data to %s\n",globals->DataDir);
    return(0);
 }
@@ -932,6 +963,10 @@ int main (int argc, char *argv[])
          double mtuneStart;
          double mtuneIncr;
 	     int ct = 1;
+         int decAmount=0;
+         double expTime=0;
+         double acutal_sw_khz = 0.0;
+         int n_points=256;
 
          setStatAcqState(ACQ_TUNING);
          sscanf(r->vals,"%lg %lg %lg", &freq, &width, &delay);
@@ -941,6 +976,8 @@ int main (int argc, char *argv[])
          mtuneIncr = width / (double) (globals.complex_points - 1);
          exps.exp_time = 2.0 * MTUNE_DELAY * 1e-9 * globals.complex_points + delay;
          exps.nt = 1;
+
+
          if (globals.debug)
          {
                diagMessage("call pb_stop_programming MTUNE case\n");
@@ -955,10 +992,13 @@ int main (int argc, char *argv[])
 
             //Reset scan counter to avoid time averaging
             pb_scan_count (1);
-            pb_set_num_points(1);
-            pb_set_scan_segments(globals.complex_points);
+            pb_set_num_points(n_points);
+            pb_set_scan_segments(1); //  scan segments only increased after STOP?
             pb_start_programming(FREQ_REGS);
             pb_set_freq(mtuneStart);
+            decAmount=pb_setup_filters(134,globals.complex_points,1) // this is usually the maximum BW that is used? ayway we are cycling thorugh the frequency points
+            actual_sw_khz = (globals.adc_frequency*1000.0) / (double) decAmount; //asumes 75MHz ADC frequency, maybe set elsewhere?
+            expTime = (double) n_points * actual_sw_khz; //in ms!
             pb_stop_programming();
             pb_start_programming(PULSE_PROGRAM);
             // Initial delay to set RF routing
@@ -970,7 +1010,7 @@ int main (int argc, char *argv[])
                   0,
                   CONTINUE, NO_DATA, delay * 1e9);
             }
-            // Loop np times, each time acquire one data point
+            // Loop np times, each time acquire n_points (256) data points
             loops = pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
                   TX_DISABLE, PHASE_RESET,
                   NO_TRIGGER, exps.useShape, exps.useAmp,
@@ -993,7 +1033,7 @@ int main (int argc, char *argv[])
                   TX_ENABLE, NO_PHASE_RESET,
                   DO_TRIGGER, exps.useShape, exps.useAmp,
 		          RECV_UNBLANK + AMP_UNBLANK + exps.mpsStatus,
-                  CONTINUE, NO_DATA, MTUNE_DELAY);
+                  CONTINUE, NO_DATA, expTime*1e6); //ms ->ns
             // Add some small delay with nothing
             pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
                   TX_DISABLE, NO_PHASE_RESET,
@@ -1013,7 +1053,7 @@ int main (int argc, char *argv[])
             aborted = 0;
             while (incr < globals.complex_points )
             {
-               //this will take miliseconds!
+               //this will take miliseconds! -> wait time is not needed!
                while (!(pb_read_status() & STATUS_WAITING))
                {
                   sleepMicroSeconds(2);
@@ -1037,8 +1077,10 @@ int main (int argc, char *argv[])
                abortExp( & (globals.InfoFile[0]), globals.CodePath, 1, 1);
                resetTTL = 1;
             }
-            else if (getData( &globals, &exps))
+            // own data getting here, typically hardcoded to 128*256
+            if( pb_get_data (globals.complex_points*n_points, re, im) < 0 )
             {
+               diagMessage("Failed to retrieve data\n");
                resetTTL = 1;
             }
             if (resetTTL)
@@ -1054,9 +1096,51 @@ int main (int argc, char *argv[])
                pb_start();
                break;
             }
+
+            // debug output here:
+            if (globals->debug)
+            {
+               writeToFile_RP(globals, "#TUNE DATA", re, im, globals.complex_points*n_points);
+            }
+
+            //need to calculate averaged data:
+            //ignore first 4 and last 4 points, as there the data often jumps
+            abs_tune = (int*) malloc(sizeof(int)*globals.complex_points)
+            int offset=0;
+            double pow=0;
+            for (point_i=0,point_i<globals.complex_points,point_i++)
+            {
+               offset=(int)(point_i*n_points);
+               pow=0;
+               for(i=4,i<(n_points-4);i++)
+               {
+                  pow += sqrt( ( (double) re[i+offset] )** 2 + ( (double) im[i+offset] )** 2 );
+               }
+               abs_tune[point_i] = (int) nearbyint(pow / ( (double) (n_points-8))); //small errors are ignorable...
+            }
+
+            // put data to globals
+            //globals.real = re;
+            //globals.imag = im;
             diagMessage("save MTUNE data\n");
-	        saveBsData( globals.real, globals.imag,
+
+            //abs tune in real and imaginary part for now
+	        saveBsData( abs_tune, abs_tune,
                       &(globals.InfoFile[0]), ct);
+            //put here free of re and im
+            if (re != NULL)
+            {
+               free(re);
+            }
+            if (im != NULL)
+            {
+               free(re);
+            }
+            if(abs_tune != NULL)
+            {
+               free(abs_tune);
+            }
+
             sleepMilliSeconds(200);
 	        ct = 2;
          }
@@ -1118,6 +1202,10 @@ int main (int argc, char *argv[])
       free(re);
    if (im)
       free(im);
+   if(abs_tune != NULL)
+   {
+      free(abs_tune);
+   }
    r = PSstart;
    while ( (r != NULL))
    {
