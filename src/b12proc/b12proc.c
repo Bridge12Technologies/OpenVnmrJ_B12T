@@ -116,6 +116,11 @@ int *im = NULL;
 // for tune mode
 int* abs_tune=NULL;
 
+double _square(double x)
+{
+   return x*x;
+}
+
 void diagMessage(const char *format, ...)
 {
    va_list vargs;
@@ -211,7 +216,7 @@ void setGlobalsDefault(Globals *globals, const char *path)
 
 static int logcall =0;
 
-int writeToFile_RP(Globals* globals, char* infoArr, int* RealData, int* ImagData, int len)
+int writeToFile_RP(Globals globals, char* infoArr, int* RealData, int* ImagData, int len)
 {
    // writes to hardcoded file logfile, always appends
    FILE * fd = fopen(globals->TuneDebug,"a");
@@ -965,7 +970,7 @@ int main (int argc, char *argv[])
 	     int ct = 1;
          int decAmount=0;
          double expTime=0;
-         double acutal_sw_khz = 0.0;
+         double actual_sw_khz = 0.0;
          int n_points=256;
 
          setStatAcqState(ACQ_TUNING);
@@ -996,7 +1001,7 @@ int main (int argc, char *argv[])
             pb_set_scan_segments(1); //  scan segments only increased after STOP?
             pb_start_programming(FREQ_REGS);
             pb_set_freq(mtuneStart);
-            decAmount=pb_setup_filters(134,globals.complex_points,1) // this is usually the maximum BW that is used? ayway we are cycling thorugh the frequency points
+            decAmount=pb_setup_filters(134,globals.complex_points,1); // this is usually the maximum BW that is used? ayway we are cycling thorugh the frequency points
             actual_sw_khz = (globals.adc_frequency*1000.0) / (double) decAmount; //asumes 75MHz ADC frequency, maybe set elsewhere?
             expTime = (double) n_points * actual_sw_khz; //in ms!
             pb_stop_programming();
@@ -1098,23 +1103,23 @@ int main (int argc, char *argv[])
             }
 
             // debug output here:
-            if (globals->debug)
+            if (globals.debug)
             {
                writeToFile_RP(globals, "#TUNE DATA", re, im, globals.complex_points*n_points);
             }
 
             //need to calculate averaged data:
             //ignore first 4 and last 4 points, as there the data often jumps
-            abs_tune = (int*) malloc(sizeof(int)*globals.complex_points)
+            abs_tune = (int*) malloc(sizeof(int)*globals.complex_points);
             int offset=0;
             double pow=0;
-            for (point_i=0,point_i<globals.complex_points,point_i++)
+            for (int point_i=0;point_i<globals.complex_points;point_i++)
             {
                offset=(int)(point_i*n_points);
                pow=0;
-               for(i=4,i<(n_points-4);i++)
+               for(int l=4,l<(n_points-4);l++)
                {
-                  pow += sqrt( ( (double) re[i+offset] )** 2 + ( (double) im[i+offset] )** 2 );
+                  pow += sqrt( _square( (double) re[l+offset] ) + _square( (double) im[l+offset] ) );
                }
                abs_tune[point_i] = (int) nearbyint(pow / ( (double) (n_points-8))); //small errors are ignorable...
             }
@@ -1141,7 +1146,7 @@ int main (int argc, char *argv[])
                free(abs_tune);
             }
 
-            sleepMilliSeconds(200);
+            sleepMilliSeconds(100);
 	        ct = 2;
          }
          diagMessage("End mtune\n");
