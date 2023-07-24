@@ -1061,7 +1061,7 @@ int main (int argc, char *argv[])
                //this will take miliseconds! -> wait time is not needed!
                while (!(pb_read_status() & STATUS_WAITING))
                {
-                  sleepMicroSeconds(2);
+                  sleepMicroSeconds(1000);
                }
                if ( access(globals.CodePath, F_OK) )
                {
