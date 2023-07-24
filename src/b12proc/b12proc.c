@@ -220,7 +220,7 @@ int writeToFile_RP(Globals* globals, char* infoArr, int* RealData, int* ImagData
       return -1;
    }
    fprintf(fd,"%s\n",infoArr);
-   for(int i=0,i<len,i++)
+   for(int i=0;i<len;i++)
    {
       fprintf(fd,"%d %d\n",*(RealData+i),*(ImagData+i));
    }
