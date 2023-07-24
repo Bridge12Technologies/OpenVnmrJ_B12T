@@ -106,7 +106,7 @@ except Exception as e:
     warnings.warn("Exception {0} occured when trying to write to comports {1}".format(e,comports))
     try:
         comports=get_comport(comport_file,searchCMD=connectID,checkString=checkString,force=True)
-        data,exit_error_flag=sendCMD(comports,cmd,sucess)
+        data,exit_error_flag=sendCMD(comports,cmd,success)
     except Exception as e2:
         warnings.warn("Exception {0} occured when trying to write to rechecked comports {1}, setting of the device failed".format(e,comports))
         if exit_error_flag==0:

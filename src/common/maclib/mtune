@@ -287,12 +287,13 @@ elseif ($action = 'quit') then
   sleep(0.05)
   $scnMode=''
   B12SCNControl('tune 0'):$scnMode
-  if ( $scnMode <> '1' ) then
+  sleep(0.05)
+  B12SCNControl('state?'):$scnMode
+  sleep(0.05)
+  if ( $scnMode = 'tune 0' ) then
     write('error','Could not quit Bridge12SCN tune mode! Are you sure that the B12SCN is connected?')
     return(1)
   endif
-  sleep(0.05)
-  B12SCNControl('state?'):$scnMode
   write('line3','Ending tune mode, going back to state %s',$scnMode)
 
 endif
