@@ -20,3 +20,4 @@ if not os.path.exists(vnmrInstallPath):
 
 Execute('cp B12ATTNControl.py ../../../vnmr/bin/B12ATTNControl')
 
+os.system("chmod +x ../../../vnmr/bin/B12ATTNControl")
