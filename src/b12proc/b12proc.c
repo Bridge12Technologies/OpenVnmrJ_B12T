@@ -235,7 +235,7 @@ int writeToFile_RP(Globals globals, char* infoArr, int* RealData, int* ImagData,
       return -1;
    }
    return 0;
-
+}
 
 void printGlobals(Globals *globals)
 {
