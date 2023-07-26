@@ -16,6 +16,7 @@ if ( $action = "reset") then
     $shellcmd='rm ../tmp/B12*'
     shell($shellcmd)
     $returnvalue = 'reset successfull'
+    write('line3','SCN returned:%s',$returnvalue)
     return($returnvalue)
 endif
 
@@ -29,6 +30,7 @@ if ($# > 2) then
 else
     $shellcmd='python3 /vnmr/bin/B12SCNControl.py '+$action+' '+$argument
     shell($shellcmd):$returnvalue
+    write('line3','SCN returned:%s',$returnvalue)
     return($returnvalue)
 endif
 
