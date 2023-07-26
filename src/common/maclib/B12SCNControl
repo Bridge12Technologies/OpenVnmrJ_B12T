@@ -32,4 +32,5 @@ else
     return($returnvalue)
 endif
 
+write('line3','SCN returned:%s',$returnvalue)
 return($returnvalue)
