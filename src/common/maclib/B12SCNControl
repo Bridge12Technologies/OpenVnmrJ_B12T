@@ -12,6 +12,12 @@ endif
 if ($# > 0) then
     $action = $1
 endif
+if ( $action = "reset") then
+    $shellcmd='rm ../tmp/B12*'
+    shell($shellcmd)
+    $returnvalue = 'reset successfull'
+    return($returnvalue)
+endif
 
 if ($# > 1) then
     $argument = $2

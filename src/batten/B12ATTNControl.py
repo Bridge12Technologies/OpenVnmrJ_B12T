@@ -86,7 +86,7 @@ def sendCMD(comports:list,cmd:list,sendCheck:str='',nmax=max(int(2*len(success))
                 serialC.write(sub_cmd.encode())
                 data=serialC.read(nmax).decode()
                 if not (sendCheck in data):
-                    exit_error_flag+=2**ind
+                    exit_error_flag-=2**ind
     return data,exit_error_flag
 
 ###
@@ -104,12 +104,23 @@ except Exception as e:
     try:
         comports=get_comport(comport_file,searchCMD=connectID,checkString=checkString,force=True)
         data,exit_error_flag=sendCMD(comports,cmd,success)
+        if exit_error_flag<= -1:
+            import glob
+            import os
+            pnames=glob.glob('../tmp/B12T_SCN*')
+            for k in pnames:
+                try:
+                    os.remove(pnames)
+                except OSError:
+                    pass
+        comports=get_comport(comport_file,searchCMD=connectID,checkString=checkString,force=True)
+        data,exit_error_flag=sendCMD(comports,cmd,success)
     except Exception as e2:
         warnings.warn("Exception {0} occured when trying to write to rechecked comports {1}, setting of the device failed".format(e,comports))
         if exit_error_flag==0:
-            exit_error_flag=999
+            exit_error_flag= -999
 
-if exit_error_flag>0:
+if exit_error_flag<0:
     print(str(exit_error_flag))
     warnings.warn("exit_error_flag was raised, setting of device failed")
     exit(exit_error_flag)
