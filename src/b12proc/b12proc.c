@@ -185,7 +185,7 @@ static int readPS(Globals *globals)
 
 void setGlobalsDefault(Globals *globals, const char *path)
 {
-   globals->debug = 0;
+   globals->debug = 1;
    globals->debugSC = 0;
    globals->board_number = 0;
    globals->board_open = 0;
@@ -1011,12 +1011,16 @@ int main (int argc, char *argv[])
             globals.board_start = 1;
             incr = 0;
             aborted = 0;
+            if (globals.debug)
+            {
+               diagMessage("Starting to call while globals.complex_points loop\n");
+            }
             while (incr < globals.complex_points )
             {
                //this will take miliseconds!
                while (!(pb_read_status() & STATUS_WAITING))
                {
-                  sleepMicroSeconds(2);
+                  sleepMicroSeconds(1000);
                }
                if ( access(globals.CodePath, F_OK) )
                {
@@ -1029,6 +1033,10 @@ int main (int argc, char *argv[])
                pb_stop_programming();
                pb_start();
                incr++;
+               if (globals.debug)
+               {
+                     diagMessage("finished loop %d\n",incr);
+               }
             }
 
             resetTTL = 0;
