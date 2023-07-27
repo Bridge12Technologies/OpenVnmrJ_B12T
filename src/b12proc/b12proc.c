@@ -194,7 +194,7 @@ static int readPS(Globals *globals)
 
 void setGlobalsDefault(Globals *globals, const char *path)
 {
-   globals->debug = 0;
+   globals->debug = 1;
    globals->debugSC = 0;
    globals->board_number = 0;
    globals->board_open = 0;
