@@ -1038,13 +1038,14 @@ int main (int argc, char *argv[])
                   TX_ENABLE, NO_PHASE_RESET,
                   DO_TRIGGER, exps.useShape, exps.useAmp,
 		          RECV_UNBLANK + AMP_UNBLANK + exps.mpsStatus,
-                  CONTINUE, NO_DATA, expTime*1e6); //ms ->ns
+                  END_LOOP, loops, expTime*1e6); //ms ->ns
             // Add some small delay with nothing
-            pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
+            /* pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
                   TX_DISABLE, NO_PHASE_RESET,
                   NO_TRIGGER, exps.useShape, exps.useAmp,
 		          AMP_UNBLANK + exps.mpsStatus,
                   END_LOOP, loops, MTUNE_DELAY);
+            */
             pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
                   TX_DISABLE, NO_PHASE_RESET,
                   NO_TRIGGER, NO_SHAPE, AMP0,
@@ -1103,7 +1104,7 @@ int main (int argc, char *argv[])
             }
 
             // debug output here:
-            if (globals.debug)
+            if (1)
             {
                writeToFile_RP(globals, "#TUNE DATA", re, im, globals.complex_points*n_points);
             }
