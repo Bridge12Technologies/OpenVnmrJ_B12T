@@ -107,6 +107,17 @@ except Exception as e:
     try:
         comports=get_comport(comport_file,searchCMD=connectID,checkString=checkString,force=True)
         data,exit_error_flag=sendCMD(comports,cmd,success)
+        if exit_error_flag<= -1:
+            import glob
+            import os
+            pnames=glob.glob('../tmp/B12T_SCN*')
+            for k in pnames:
+                try:
+                    os.remove(pnames)
+                except OSError:
+                    pass
+        comports=get_comport(comport_file,searchCMD=connectID,checkString=checkString,force=True)
+        data,exit_error_flag=sendCMD(comports,cmd,success)
     except Exception as e2:
         warnings.warn("Exception {0} occured when trying to write to rechecked comports {1}, setting of the device failed".format(e,comports))
         if exit_error_flag==0:
