@@ -43,7 +43,7 @@ endif
 $checkValue=''
 shell('python3 /vnmr/bin/B12SCNControl.py state?'):$checkValue
 if ($checkValue = 'intamp') then
-    tpwrf = 1
+    tpwrf = 100
 elseif ( $checkValue = 'extamp' ) then
     tpwrf = 1
 endif
