@@ -91,10 +91,10 @@ elseif ($action = 'start') then
   "add B12SCNControl here and set power automatically to 0.01"
   mtune('setpwr',1)
   write('line3','Set power to 1!')
-  B12SCNControl('tune 1')
+  B12SCNControl('tune 1','silent')
   sleep(0.05)
   $scnMode=''
-  B12SCNControl('tune?'):$scnMode
+  B12SCNControl('tune?','silent'):$scnMode
   if ( $scnMode <> '1' ) then
     write('error','Could not set Bridge12SCN in tune mode, aborting! Is the USB connected?')
     return
@@ -286,9 +286,9 @@ elseif ($action = 'quit') then
 
   sleep(0.05)
   $scnMode=''
-  B12SCNControl('tune 0'):$scnMode
+  B12SCNControl('tune 0','silent'):$scnMode
   sleep(0.05)
-  B12SCNControl('state?'):$scnMode
+  B12SCNControl('state?','silent'):$scnMode
   sleep(0.05)
   if ( $scnMode = 'tune mode' ) then
     write('error','Could not quit Bridge12SCN tune mode! Are you sure that the B12SCN is connected?')

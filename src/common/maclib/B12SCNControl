@@ -2,7 +2,7 @@
 
 $action = 'extamp'
 $argument = ''
-$mode = 'silent'
+$mode = 'loud'
 $reset='False'
 $scnCommands='0'
 
@@ -11,8 +11,8 @@ $args = ''
 $i = 0
 while ($i<$#) do
     $i = $i + 1
-    if ( ${$i} = 'loud') then
-        $mode='loud'
+    if ( ${$i} = 'silent') then
+        $mode='silent'
     elseif ( ${$i} = 'reset' ) then
         $reset='True'
     else
