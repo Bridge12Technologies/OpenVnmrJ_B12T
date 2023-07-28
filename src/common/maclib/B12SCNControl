@@ -1,6 +1,5 @@
 "macro to control the SCN microcontroller"
 
-$action = 'extamp'
 $argument = ''
 $mode = 'loud'
 $reset='False'
