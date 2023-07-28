@@ -40,4 +40,13 @@ if ($scnCommands = '1') then
     endif
 endif
 
+" Set power output lower to not blow out external devices
+$checkValue=''
+shell('python3 /vnmr/bin/B12SCNControl.py state?'):$checkValue
+if ($checkValue = 'intamp') then
+    tpwrf = 1
+elseif ( $checkValue = 'extamp' ) then
+    tpwrf = 1
+endif
+
 return($returnvalue)
