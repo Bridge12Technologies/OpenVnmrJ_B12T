@@ -2,37 +2,42 @@
 
 $action = 'extamp'
 $argument = ''
+$mode = 'silent'
+$reset='False'
+$scnCommands='0'
+
+// Parse input
+$args = ''
+$i = 0
+while ($i<$#) do
+    $i = $i + 1
+    if ( ${$i} = 'loud') then
+        $mode='loud'
+    elseif ( ${$i} = 'reset' ) then
+        $reset='True'
+    else
+        $args= $args + ${$i} + ' '
+        $scnCommands='1'
+    endif
+endwhile
 
 $returnvalue='No Action done!'
 
-if ($# < 1)then
-    return('None')
-endif
-
-if ($# > 0) then
-    $action = $1
-endif
-if ( $action = 'reset') then
-    $shellcmd='rm ../tmp/B12*'
+if ( $reset <> 'False' ) then
+    $shellcmd='rm /vnmr/tmp/B12*'
     shell($shellcmd)
-    $returnvalue = 'reset successfull'
-    write('line3','SCN returned:%s',$returnvalue)
-    return($returnvalue)
+    $returnvalue = 'SCN reset successfull'
+    if ( $mode <> 'silent') then
+        write('line3','SCN returned:%s',$returnvalue)
+    endif
 endif
 
-if ($# > 1) then
-    $argument = $2
-endif
-if ($# > 2) then
-    $argument2 = $3
-    $shellcmd='python3 /vnmr/bin/B12SCNControl.py '+$action+' '+$argument+' '+$argument2
+if ($scnCommands = '1') then
+    $shellcmd='python3 /vnmr/bin/B12SCNControl.py '+$args
     shell($shellcmd):$returnvalue
-else
-    $shellcmd='python3 /vnmr/bin/B12SCNControl.py '+$action+' '+$argument
-    shell($shellcmd):$returnvalue
-    write('line3','SCN returned:%s',$returnvalue)
-    return($returnvalue)
+    if ( $mode <> 'silent') then
+        write('line3','SCN returned:%s',$returnvalue)
+    endif
 endif
 
-write('line3','SCN returned:%s',$returnvalue)
 return($returnvalue)
