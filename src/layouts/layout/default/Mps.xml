@@ -117,7 +117,7 @@
         max="9.9"
         incr1="0.00001"
         incr2="0.1"
-        digits="8"
+        digits="5"
         statpar="mpsFreq"
         drag="50"
         />

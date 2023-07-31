@@ -46,6 +46,16 @@ if ($checkValue = 'intamp') then
     tpwrf = 100
 elseif ( $checkValue = 'extamp' ) then
     tpwrf = 1
-endif
-
+else
+    $shellcmd='rm /vnmr/tmp/B12*'
+    shell($shellcmd)
+    shell('python3 /vnmr/bin/B12SCNControl.py state?'):$checkValue
+    if ($checkValue = 'intamp') then
+        tpwrf = 100
+    elseif ( $checkValue = 'extamp' ) then
+        tpwrf = 1
+    else
+        tpwrf = 1
+        write('line3','No communication with SCN possible, set tpwrf to 1 for safety reasons, if in intamp mode use the command tpwrf=100')
+    return '-1'
 return($returnvalue)
