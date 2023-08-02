@@ -676,7 +676,7 @@ int main (int argc, char *argv[])
                            (double) val[i]/1000.0, i);
             pb_set_amp((double) val[i]/1000.0, i);
 	 }
-	 exps.useAmp = AMP0;
+	 exps.useAmp = num-1; // now no longer hardcoded to 0!
 	 exps.useShape = NO_SHAPE;
       }
       else if ( ! strcmp(r->inst,"SPECTROMETER_FREQUENCY") )
