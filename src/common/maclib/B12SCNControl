@@ -57,5 +57,8 @@ else
     else
         tpwrf = 1
         write('line3','No communication with SCN possible, set tpwrf to 1 for safety reasons, if in intamp mode use the command tpwrf=100')
-    return '-1'
+        $returnvalue='-1'
+        return($returnvalue)
+    endif
+endif
 return($returnvalue)
