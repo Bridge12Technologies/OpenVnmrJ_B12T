@@ -729,13 +729,13 @@ int main (int argc, char *argv[])
                                          0, PHASE090, PHASE000, 0,
                TX_DISABLE, 0,
                NO_TRIGGER, NO_SHAPE, AMP0, 0,
-               0, NO_DATA, MIN_DELAY);
+               8, NO_DATA, MIN_DELAY);
             }
             pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
                            TX_DISABLE, NO_PHASE_RESET,
                            NO_TRIGGER, NO_SHAPE, AMP0,
                            0,
-                           0, NO_DATA, MIN_DELAY); //spincore.WAIT seems to be not working -> replaced with 0
+                           8, NO_DATA, MIN_DELAY); //spincore.WAIT seems to be not working -> replaced with 8
          }
       }
       else if ( ! strcmp(r->inst,"PHASE_RESET") )
