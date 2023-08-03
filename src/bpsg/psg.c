@@ -808,12 +808,32 @@ int main(int argc, char *argv[])
               close_error(0);
               exit(0);
         }
-	if ( ! mpstuneflag)
-           fprintf(psgFile,"PULSEPROG_START     %d\n",ix);
+   if ( ! mpstuneflag)
+   {
+            int int_HWTrigflag=0;
+            double  tmpval;
+            if ( P_getreal(CURRENT,"B12HWTriggerFlag",&tmpval,1) >= 0 )
+            {
+               int_HWTrigflag = (int) tmpval;
+               // could be done with a AND comparison but I like it explciit here
+               if (int_HWTrigflag != 0)
+               {
+                  int_HWTrigflag=1;
+               }
+            }
+            else
+            {
+               int_HWTrigflag = 0;
+            }
+            fprintf(psgFile,"PULSEPROG_START     %d %d\n",ix,int_HWTrigflag);
+   }
+
 
 	createPS();
 	if ( ! mpstuneflag && ! tuneflag )
+    {
            fprintf(psgFile,"PULSEPROG_DONE      %d\n",ix);
+    }
 #ifdef XXX
         totaltime -= pad;
         if (var_active("ss",CURRENT))

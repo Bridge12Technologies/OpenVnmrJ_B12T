@@ -74,6 +74,7 @@ struct _Globals {
                   int complex_points;   // number of complex pairs
                   int *real;
                   int *imag;
+                  int HWTriggerFlag; // do we wait for a HWTrigger?
                   double adc_frequency;
                   double totalTime;
                   char DataDir[512];
@@ -195,6 +196,7 @@ void setGlobalsDefault(Globals *globals, const char *path)
    globals->DataDir[0] = '\0';;
    globals->arraydim = 1;
    globals->complex_points = 0;
+   globals->HWTriggerFlag = 0;
    globals->totalTime = 0.0;
    globals->real = NULL;
    globals->imag = NULL;
@@ -218,6 +220,7 @@ void printGlobals(Globals *globals)
    diagMessage("  adc_frequency:  %g\n",globals->adc_frequency);
    diagMessage("  DataDir:        %s\n",globals->DataDir);
    diagMessage("  InfoFile:       %s\n",globals->InfoFile);
+   diagMessage("  HWTriggerFlag:  %d\n",globals->HWTriggerFlag);
 }
 
 void printExps(Exps *exps)
@@ -603,7 +606,12 @@ int main (int argc, char *argv[])
       }
       else if ( ! strcmp(r->inst,"PULSEPROG_START") )
       {
-         exps.elem= atof(r->vals);
+         // scan values
+         int HWTriggerFlag=0;
+         double pulseprogVal;
+         sscanf(r->vals,"%lg %d", &pulseprogVal, &HWTriggerFlag);
+
+         exps.elem= pulseprogVal;
          exps.opCode = CONTINUE;
          exps.mpsStatus = 0;
 	      exps.useAmp = AMP0;
@@ -637,6 +645,12 @@ int main (int argc, char *argv[])
                abortExp( & (globals.InfoFile[0]), globals.CodePath, 1, exps.elem);
                break;
          }
+         // set HWTriggerFlag
+         if (HWTriggerFlag != 0)
+         {
+            globals.HWTriggerFlag=HWTriggerFlag;
+         }
+
       }
       else if ( ! strcmp(r->inst,"RATTN") )
       {
@@ -706,6 +720,24 @@ int main (int argc, char *argv[])
          if (globals.debug)
             diagMessage("call pb_start_programming(%d)\n", PULSE_PROGRAM);
          pb_start_programming (PULSE_PROGRAM);
+         if (globals.HWTriggerFlag != 0)
+         {
+            if (globals.debug)
+            {
+               diagMessage("HWTriggerFlag is set to 1 - add 70ns WAIT cmd\n");
+               diagMessage("call pb_inst_radio_shape(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%g) = ",
+                                         0, PHASE090, PHASE000, 0,
+               TX_DISABLE, 0,
+               NO_TRIGGER, NO_SHAPE, AMP0, 0,
+               0, NO_DATA, MIN_DELAY);
+            }
+            pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
+                           TX_DISABLE, NO_PHASE_RESET,
+                           NO_TRIGGER, NO_SHAPE, AMP0,
+                           0,
+                           0, NO_DATA, MIN_DELAY); //spincore.WAIT seems to be not working -> replaced with 0
+         }
+         }
       }
       else if ( ! strcmp(r->inst,"PHASE_RESET") )
       {
@@ -887,6 +919,7 @@ int main (int argc, char *argv[])
                END_LOOP, exps.loop, MIN_DELAY);
          exps.exp_time += MIN_DELAY * 1e-9;
  */
+
           if (globals.debug)
           {
                diagMessage("call pb_inst_radio_shape(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%g) (done)\n",
@@ -914,15 +947,21 @@ int main (int argc, char *argv[])
                diagMessage("call pb_reset\n");
           }
          pb_reset();
-          if (globals.debug)
-               diagMessage("call pb_start\n");
+
+         if (globals.debug)
+         {
+            diagMessage("call pb_start\n");
+         }
          pb_start();
          globals.board_start = 1;
          if (getData( &globals, &exps))
+         {
             break;
-         saveData( exps.nt, atoi(r->vals), globals.arraydim,
-                   globals.real, globals.imag,
-                   &(globals.InfoFile[0]));
+         }
+         saveData( exps.nt, atof(r->vals), globals.arraydim,
+                  globals.real, globals.imag,
+                  &(globals.InfoFile[0]));
+
       }
       else if ( ! strcmp(r->inst,"MTUNE") )
       {
