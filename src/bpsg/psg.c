@@ -820,6 +820,7 @@ int main(int argc, char *argv[])
             {
                //int_HWTrigflag = (int) getval("B12HWTriggerFlag");
                int_HWTrigflag = (int) tmpval;
+               fprintf(psgFile,"DEBUG_PSG  (inside) %d\n",int_HWTrigflag);
                // could be done with a AND comparison but I like it explciit here
                if (int_HWTrigflag != 0)
                {
