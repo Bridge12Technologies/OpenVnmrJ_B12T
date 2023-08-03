@@ -182,7 +182,7 @@ void createPS()
    {
        fprintf(psgFile,"MPSPOWER %g\n",mpspower);
    }
-   if (strcmp(mps,"ext") )
+   if (!strcmp(mps,"ext") )
    {
       fprintf(psgFile,"STATUS_MPS 1\n");
    }
