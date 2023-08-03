@@ -811,13 +811,15 @@ int main(int argc, char *argv[])
    if ( ! mpstuneflag)
    {
             int int_HWTrigflag=0;
-            //double  tmpval;
-            int tmpval;
-            //if ( P_getreal(CURRENT,"B12HWTriggerFlag",&tmpval,1) >= 0 )
-            if ( var_active("B12HWTriggerFlag",CURRENT) )
+            double  tmpval;
+            //int tmpval;
+            int int_getFlag = P_getreal(CURRENT,"B12HWTriggerFlag",&tmpval,1);
+            fprintf(psgFile,"DEBUG_PSG     %d\n",int_getFlag);
+            if ( int_getFlag >= 0 )
+            //if ( var_active("B12HWTriggerFlag",CURRENT) )
             {
-               int_HWTrigflag = (int) getval("B12HWTriggerFlag");
-               //int_HWTrigflag = (int) tmpval;
+               //int_HWTrigflag = (int) getval("B12HWTriggerFlag");
+               int_HWTrigflag = (int) tmpval;
                // could be done with a AND comparison but I like it explciit here
                if (int_HWTrigflag != 0)
                {
