@@ -737,7 +737,6 @@ int main (int argc, char *argv[])
                            0,
                            0, NO_DATA, MIN_DELAY); //spincore.WAIT seems to be not working -> replaced with 0
          }
-         }
       }
       else if ( ! strcmp(r->inst,"PHASE_RESET") )
       {
