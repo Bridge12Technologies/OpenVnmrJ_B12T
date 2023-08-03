@@ -80,7 +80,20 @@ struct _Globals {
                   char InfoFile[512];
                   char CodePath[512];
                 };
+
 typedef struct _Globals Globals;
+
+// for now only a few parameters
+struct  b12p_mpsPulseParameters{
+   int pulseCounter;
+   int pulseCounterOffValue;
+};
+
+void set_b12p_mpsPulseParameters_default(b12p_mpsPulseParameters* parameters)
+{
+   parameters->pulseCounter=0;
+   parameters->pulseCounterOffValue=1;
+}
 
 struct _Exps {
                   int nt;
@@ -535,6 +548,10 @@ int main (int argc, char *argv[])
    Globals globals;
    Exps exps;
    int pbRes;
+
+   // initaize and set defaults for b12p_mpsPulseParameters struct
+   b12p_mpsPulseParameters b12p_mpsParameters;
+   set_b12p_mpsPulseParameters_default(&b12p_mpsParameters)
 	
    // Special cases to handle configuration file
    if (argc == 3)
@@ -834,6 +851,15 @@ int main (int argc, char *argv[])
                if (globals.debug)
                {
                   diagMessage("%d (for ringdown_delay <= 0)\n", pbRes);
+               }
+            }
+            b12p_mpsParameters.pulseCounter+=1;
+            if (b12p_mpsParameters.pulseCounter>b12p_mpsParameters.pulseCounterOffValue)
+            {
+               exps.mpsStatus = 0;
+               if (globals.debug)
+               {
+                  diagMessage("set exps.mpsStatus to 0\n");
                }
             }
             exps.exp_time += duration + ringdown_delay;
