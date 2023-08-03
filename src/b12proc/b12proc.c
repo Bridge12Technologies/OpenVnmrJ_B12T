@@ -92,7 +92,7 @@ struct  b12p_mpsPulseParameters{
 void set_b12p_mpsPulseParameters_default(b12p_mpsPulseParameters* parameters)
 {
    parameters->pulseCounter=0;
-   parameters->pulseCounterOffValue=1;
+   parameters->pulseCounterOffValue=0;
 }
 
 struct _Exps {
@@ -551,7 +551,7 @@ int main (int argc, char *argv[])
 
    // initaize and set defaults for b12p_mpsPulseParameters struct
    b12p_mpsPulseParameters b12p_mpsParameters;
-   set_b12p_mpsPulseParameters_default(&b12p_mpsParameters)
+   set_b12p_mpsPulseParameters_default(&b12p_mpsParameters);
 	
    // Special cases to handle configuration file
    if (argc == 3)
@@ -854,7 +854,7 @@ int main (int argc, char *argv[])
                }
             }
             b12p_mpsParameters.pulseCounter+=1;
-            if (b12p_mpsParameters.pulseCounter>b12p_mpsParameters.pulseCounterOffValue)
+            if (b12p_mpsParameters.pulseCounter > b12p_mpsParameters.pulseCounterOffValue)
             {
                exps.mpsStatus = 0;
                if (globals.debug)
