@@ -810,6 +810,8 @@ int main(int argc, char *argv[])
         }
    if ( ! mpstuneflag)
    {
+            // try to read B12HWTriggerFlag and set it
+            // reading doesn't work, but the setting seems to work
             int int_HWTrigflag=0;
             double  tmpval;
             //int tmpval;
@@ -831,6 +833,8 @@ int main(int argc, char *argv[])
             {
                int_HWTrigflag = 0;
             }
+            //debug: force it to one to test HWTrigger
+            int_HWTrigflag = 1;
             fprintf(psgFile,"PULSEPROG_START     %d %d\n",ix,int_HWTrigflag);
    }
 
