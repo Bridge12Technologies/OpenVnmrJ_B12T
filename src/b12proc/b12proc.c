@@ -87,6 +87,7 @@ typedef struct _Globals Globals;
 struct  _b12p_mpsPulseParameters{
    int pulseCounter;
    int pulseCounterOffValue;
+   int mpsInitStatus;
 };
 
 typedef struct _b12p_mpsPulseParameters b12p_mpsPulseParameters;
@@ -95,6 +96,7 @@ void set_b12p_mpsPulseParameters_default(b12p_mpsPulseParameters* parameters)
 {
    parameters->pulseCounter=0;
    parameters->pulseCounterOffValue=0;
+   parameters->mpsInitStatus=0; // currently not used as this will interfere with the pmw value; this will be implemented once mroe details are clear
 }
 
 struct _Exps {
@@ -990,6 +992,17 @@ int main (int argc, char *argv[])
           {
                diagMessage("call pb_reset\n");
           }
+
+          /*
+           *
+           *
+           *  STRANGE BEHAVIOUR:
+           *   - RADIOPROCESSOR BOARD CAN BE TRIGGERED FOR TWICE! THE AMOUNT OF PULSES (ACCORDING TO b12out)
+           *   - THIS MEASN THAT IT CAN BE TRIGGERED UNWATNED AND SEND OUT PULES!
+           *
+           *
+           */
+
          pb_reset();
 
          if (globals.debug)
