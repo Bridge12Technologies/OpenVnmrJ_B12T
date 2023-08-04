@@ -178,8 +178,14 @@ void createPS()
        endElems();
        return;
     }
-    if (mpspoweractive)
+   if (mpspoweractive)
+   {
        fprintf(psgFile,"MPSPOWER %g\n",mpspower);
+   }
+   if (!strcmp(mps,"ext") )
+   {
+      fprintf(psgFile,"STATUS_MPS 1\n");
+   }
     maxPh = maxPhaseCycle();
     chkLoop(maxPh, totalScans, &nscLoop, &loopCnt, &remCnt);
     if (nscLoop)
