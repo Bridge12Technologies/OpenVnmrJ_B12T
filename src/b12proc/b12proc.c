@@ -84,10 +84,12 @@ struct _Globals {
 typedef struct _Globals Globals;
 
 // for now only a few parameters
-struct  b12p_mpsPulseParameters{
+struct  _b12p_mpsPulseParameters{
    int pulseCounter;
    int pulseCounterOffValue;
 };
+
+typedef struct _b12p_mpsPulseParameters b12p_mpsPulseParameters;
 
 void set_b12p_mpsPulseParameters_default(b12p_mpsPulseParameters* parameters)
 {
