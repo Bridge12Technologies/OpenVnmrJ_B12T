@@ -148,11 +148,12 @@ void createPS()
    // reading doesn't work, but the setting seems to work
    // in futire: maybe allow to set waiting period?
    int int_HWTrigflag=0;
-   double dbl_getFlag = P_getreal(GLOBAL,"B12HWTriggerFlag",&tmpval,1);
-   fprintf(psgFile,"DEBUG_PSG     %d\n",(int) dbl_getFlag);
-   if ( dbl_getFlag >= 0 )
+   double _tmpval;
+   int int_getFlag = P_getreal(GLOBAL,"B12HWTriggerFlag",&_tmpval,1);
+   fprintf(psgFile,"DEBUG_PSG     %d\n",(int) int_getFlag);
+   if ( int_getFlag >= 0 )
    {
-      int_HWTrigflag = (int) dbl_getFlag;
+      int_HWTrigflag = (int) _tmpval;
       fprintf(psgFile,"DEBUG_PSG  (inside) %d\n",int_HWTrigflag);
       // could be done with a AND comparison but I like it explciit here
       if (int_HWTrigflag != 0)
