@@ -743,13 +743,13 @@ int main (int argc, char *argv[])
                                          0, PHASE090, PHASE000, 0,
                TX_DISABLE, 0,
                NO_TRIGGER, NO_SHAPE, AMP0, 0,
-               8, NO_DATA, 20);
+               8, NO_DATA, 20.0);
             }
             pbRes=pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
                            TX_DISABLE, NO_PHASE_RESET,
                            NO_TRIGGER, NO_SHAPE, AMP0,
                            0,
-                           8, NO_DATA, 20); //spincore.WAIT seems to be not working -> replaced with 8
+                           8, NO_DATA, MIN_DELAY); //spincore.WAIT seems to be not working -> replaced with 8
             if (globals.debug)
             {
                diagMessage("%d (for HWTrigger)\n", pbRes);
@@ -845,6 +845,8 @@ int main (int argc, char *argv[])
                   NO_TRIGGER, exps.useShape, exps.useAmp,
 		            AMP_UNBLANK + exps.mpsStatus,
                   CONTINUE, NO_DATA, duration * 1e9);
+
+
                if (globals.debug)
                {
                   diagMessage("%d (for ringdown_delay > 0)\n", pbRes);
@@ -855,6 +857,18 @@ int main (int argc, char *argv[])
 		            exps.mpsStatus,
                   exps.opCode, exps.opCodeData, ringdown_delay * 1e9);
                }
+
+               /* setting the MPS external status to zero after the specified pulse */
+               b12p_mpsParameters.pulseCounter+=1;
+               if (b12p_mpsParameters.pulseCounter > b12p_mpsParameters.pulseCounterOffValue)
+               {
+                  exps.mpsStatus = 0;
+                  if (globals.debug)
+                  {
+                     diagMessage(" (set exps.mpsStatus to 0)");
+                  }
+               }
+
                pbRes = pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
                   TX_DISABLE, exps.phaseReset,
                   NO_TRIGGER, NO_SHAPE, AMP0,
@@ -881,18 +895,21 @@ int main (int argc, char *argv[])
                   NO_TRIGGER, exps.useShape, exps.useAmp,
 		            AMP_UNBLANK + exps.mpsStatus,
                   exps.opCode, exps.opCodeData, duration * 1e9);
+
+               /* setting the MPS external status to zero after the specified pulse */
+               b12p_mpsParameters.pulseCounter+=1;
+               if (b12p_mpsParameters.pulseCounter > b12p_mpsParameters.pulseCounterOffValue)
+               {
+                  exps.mpsStatus = 0;
+                  if (globals.debug)
+                  {
+                     diagMessage(" (set exps.mpsStatus to 0 )");
+                  }
+               }
+
                if (globals.debug)
                {
                   diagMessage("%d (for ringdown_delay <= 0)\n", pbRes);
-               }
-            }
-            b12p_mpsParameters.pulseCounter+=1;
-            if (b12p_mpsParameters.pulseCounter > b12p_mpsParameters.pulseCounterOffValue)
-            {
-               exps.mpsStatus = 0;
-               if (globals.debug)
-               {
-                  diagMessage("set exps.mpsStatus to 0\n");
                }
             }
             exps.exp_time += duration + ringdown_delay;
