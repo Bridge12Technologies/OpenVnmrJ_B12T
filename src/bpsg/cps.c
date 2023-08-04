@@ -140,6 +140,31 @@ void createPS()
        at = actual_at;
     }
     
+    /*
+     Get HWTrigger parameter
+
+     */
+    // try to read B12HWTriggerFlag and set it
+   // reading doesn't work, but the setting seems to work
+   // in futire: maybe allow to set waiting period?
+   int int_HWTrigflag=0;
+   double dbl_getFlag = P_getreal(GLOBAL,"B12HWTriggerFlag",&tmpval,1);
+   fprintf(psgFile,"DEBUG_PSG     %d\n",(int) dbl_getFlag);
+   if ( dbl_getFlag >= 0 )
+   {
+      int_HWTrigflag = (int) dbl_getFlag;
+      fprintf(psgFile,"DEBUG_PSG  (inside) %d\n",int_HWTrigflag);
+      // could be done with a AND comparison but I like it explciit here
+      if (int_HWTrigflag != 0)
+      {
+         int_HWTrigflag=1;
+      }
+   }
+   else //explcicit > implicit (;
+   {
+      int_HWTrigflag = 0;
+   }
+
 
 //    loadshims();
 
@@ -201,6 +226,8 @@ void createPS()
     fprintf(psgFile,"PHASE_RESET 1\n");
     initElems();
     rlpower(tpwrf,0);
+    // add here new HWTrig command
+    fprintf(psgFile,"HWTRIG %d\n",int_HWTrigflag);
     pulsesequence();	/* generate Acodes from USER Pulse Sequence */
    if (acqtriggers == 0)
    {
@@ -221,6 +248,8 @@ void createPS()
        pre_fidsequence();		/* users pre fid functions */
     fprintf(psgFile,"PHASE_RESET 1\n");
     initElems();
+    // add here new HWTrig command
+   fprintf(psgFile,"HWTRIG_ENABLE %d\n",int_HWTrigflag);
     pulsesequence();	/* generate Acodes from USER Pulse Sequence */
    if (acqtriggers == 0)
    {

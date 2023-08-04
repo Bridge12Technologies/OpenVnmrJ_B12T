@@ -74,7 +74,6 @@ struct _Globals {
                   int complex_points;   // number of complex pairs
                   int *real;
                   int *imag;
-                  int HWTriggerFlag; // do we wait for a HWTrigger?
                   double adc_frequency;
                   double totalTime;
                   char DataDir[512];
@@ -211,7 +210,6 @@ void setGlobalsDefault(Globals *globals, const char *path)
    globals->DataDir[0] = '\0';;
    globals->arraydim = 1;
    globals->complex_points = 0;
-   globals->HWTriggerFlag = 0;
    globals->totalTime = 0.0;
    globals->real = NULL;
    globals->imag = NULL;
@@ -235,7 +233,6 @@ void printGlobals(Globals *globals)
    diagMessage("  adc_frequency:  %g\n",globals->adc_frequency);
    diagMessage("  DataDir:        %s\n",globals->DataDir);
    diagMessage("  InfoFile:       %s\n",globals->InfoFile);
-   diagMessage("  HWTriggerFlag:  %d\n",globals->HWTriggerFlag);
 }
 
 void printExps(Exps *exps)
@@ -626,9 +623,8 @@ int main (int argc, char *argv[])
       else if ( ! strcmp(r->inst,"PULSEPROG_START") )
       {
          // scan values
-         int HWTriggerFlag=0;
          double pulseprogVal;
-         sscanf(r->vals,"%lg %d", &pulseprogVal, &HWTriggerFlag);
+         sscanf(r->vals,"%lg %d", &pulseprogVal);
 
          exps.elem= pulseprogVal;
          exps.opCode = CONTINUE;
@@ -664,12 +660,6 @@ int main (int argc, char *argv[])
                abortExp( & (globals.InfoFile[0]), globals.CodePath, 1, exps.elem);
                break;
          }
-         // set HWTriggerFlag
-         if (HWTriggerFlag != 0)
-         {
-            globals.HWTriggerFlag=HWTriggerFlag;
-         }
-
       }
       else if ( ! strcmp(r->inst,"RATTN") )
       {
@@ -739,22 +729,32 @@ int main (int argc, char *argv[])
          if (globals.debug)
             diagMessage("call pb_start_programming(%d)\n", PULSE_PROGRAM);
          pb_start_programming (PULSE_PROGRAM);
-         if (globals.HWTriggerFlag != 0)
+      }
+      // HWTRIGGER
+      else if( ! strcmp(r->inst,"HWTRIG_ENABLE") )
+      {
+         int b12p_int_HWTRIG=0;
+         sscanf(r->vals,"%d", &b12p_int_HWTRIG);
+         if (b12p_int_HWTRIG != 0)
          {
             if (globals.debug)
             {
-               diagMessage("HWTriggerFlag is set to 1 - add 70ns WAIT cmd\n");
                diagMessage("call pb_inst_radio_shape(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%g) = ",
                                          0, PHASE090, PHASE000, 0,
                TX_DISABLE, 0,
                NO_TRIGGER, NO_SHAPE, AMP0, 0,
-               8, NO_DATA, MIN_DELAY);
+               8, NO_DATA, 20);
             }
-            pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
+            pbRes=pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
                            TX_DISABLE, NO_PHASE_RESET,
                            NO_TRIGGER, NO_SHAPE, AMP0,
                            0,
-                           8, NO_DATA, MIN_DELAY); //spincore.WAIT seems to be not working -> replaced with 8
+                           8, NO_DATA, 20); //spincore.WAIT seems to be not working -> replaced with 8
+            if (globals.debug)
+            {
+               diagMessage("%d (for HWTrigger)\n", pbRes);
+            }
+
          }
       }
       else if ( ! strcmp(r->inst,"PHASE_RESET") )
