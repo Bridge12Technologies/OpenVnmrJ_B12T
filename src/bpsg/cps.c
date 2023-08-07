@@ -149,7 +149,7 @@ void createPS()
    // in futire: maybe allow to set waiting period?
    int int_HWTrigflag=0;
    double _tmpval;
-   int int_getFlag = P_getreal(GLOBAL,"B12HWTriggerFlag",&_tmpval,1);
+   int int_getFlag = P_getreal(CURRENT,"B12HWTriggerFlag",&_tmpval,1);
    fprintf(psgFile,"DEBUG_PSG     %d\n",(int) int_getFlag);
    if ( int_getFlag >= 0 )
    {
