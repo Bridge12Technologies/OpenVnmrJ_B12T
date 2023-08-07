@@ -867,7 +867,7 @@ int main (int argc, char *argv[])
                   exps.mpsStatus = 0;
                   if (globals.debug)
                   {
-                     diagMessage(" (set exps.mpsStatus to 0)");
+                     diagMessage(" (set exps.mpsStatus to 0) ");
                   }
                }
 
