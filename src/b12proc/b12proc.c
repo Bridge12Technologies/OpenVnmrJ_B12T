@@ -745,7 +745,7 @@ int main (int argc, char *argv[])
                                          0, PHASE090, PHASE000, 0,
                TX_DISABLE, 0,
                NO_TRIGGER, NO_SHAPE, AMP0, 0,
-               8, NO_DATA, 20.0);
+               8, NO_DATA, MIN_DELAY);
             }
             pbRes=pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
                            TX_DISABLE, NO_PHASE_RESET,
