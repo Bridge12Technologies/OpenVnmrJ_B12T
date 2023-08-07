@@ -944,7 +944,7 @@ int main (int argc, char *argv[])
          resetExp(pbRes, &exps);
          }
       }
-      else if ( ! strcmp(r->inst,"STATUS_MPS") )
+      else if ( ! strcmp(r->inst,"STATUS") )
       {
          int state;
 

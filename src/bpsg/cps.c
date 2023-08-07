@@ -208,11 +208,6 @@ void createPS()
    {
        fprintf(psgFile,"MPSPOWER %g\n",mpspower);
    }
-   if (!strcmp(mps,"ext") )
-   {
-      fprintf(psgFile,"STATUS_MPS 1\n");
-   }
-   // else: Manual or OFF or ON, we don't care?'
 
     maxPh = maxPhaseCycle();
     chkLoop(maxPh, totalScans, &nscLoop, &loopCnt, &remCnt);
