@@ -88,6 +88,8 @@ cmd = 'chmod +x '+os.path.join(vnmrPath,'openvnmrj-utils','bin')+'/*'
 os.system(cmd)
 cmd = 'chmod +x '+os.path.join(vnmrPath,'userlib','extract')
 os.system(cmd)
+cmd = 'chmod +x '+os.path.join(vnmrPath,'bin','B12*')
+os.system(cmd)
 
 token = ''
 revFile = os.path.join(cwd,os.pardir,'vnmr','revdate.c')

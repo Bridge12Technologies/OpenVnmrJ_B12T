@@ -1,0 +1,64 @@
+"macro to control the SCN microcontroller"
+
+$argument = ''
+$mode = 'loud'
+$reset='False'
+$scnCommands='0'
+
+// Parse input
+$args = ''
+$i = 0
+while ($i<$#) do
+    $i = $i + 1
+    if ( ${$i} = 'silent') then
+        $mode='silent'
+    elseif ( ${$i} = 'reset' ) then
+        $reset='True'
+    else
+        $args= $args + ${$i} + ' '
+        $scnCommands='1'
+    endif
+endwhile
+
+$returnvalue='No Action done!'
+
+if ( $reset <> 'False' ) then
+    $shellcmd='rm /vnmr/tmp/B12*'
+    shell($shellcmd)
+    $returnvalue = 'SCN reset successfull'
+    if ( $mode <> 'silent') then
+        write('line3','SCN returned:%s',$returnvalue)
+    endif
+endif
+
+if ($scnCommands = '1') then
+    $shellcmd='python3 /vnmr/bin/B12SCNControl.py '+$args
+    shell($shellcmd):$returnvalue
+    if ( $mode <> 'silent') then
+        write('line3','SCN returned:%s',$returnvalue)
+    endif
+endif
+
+" Set power output lower to not blow out external devices
+$checkValue=''
+shell('python3 /vnmr/bin/B12SCNControl.py state?'):$checkValue
+if ($checkValue = 'intamp') then
+    tpwrf = 100
+elseif ( $checkValue = 'extamp' ) then
+    tpwrf = 1
+else
+    $shellcmd='rm /vnmr/tmp/B12*'
+    shell($shellcmd)
+    shell('python3 /vnmr/bin/B12SCNControl.py state?'):$checkValue
+    if ($checkValue = 'intamp') then
+        tpwrf = 100
+    elseif ( $checkValue = 'extamp' ) then
+        tpwrf = 1
+    else
+        tpwrf = 1
+        write('line3','No communication with SCN possible, set tpwrf to 1 for safety reasons, if in intamp mode use the command tpwrf=100')
+        $returnvalue='-1'
+        return($returnvalue)
+    endif
+endif
+return($returnvalue)

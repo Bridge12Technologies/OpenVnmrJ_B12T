@@ -46,6 +46,8 @@ void mpsTuneData(int init, char *outfile0, int np0);
 static int mpsFD = -1;
 static int statusInterval;
 static int statTuneFlag;
+static int wgstate=0;
+static int rfstate=0;
 int rfSweepDwell = 100;
 int mpsCmdOk = 0;
 
@@ -343,8 +345,10 @@ int recvMPS(char *msg, size_t len)
    int loops = 0;
 
    msg[0] = '\0';
-   sleepMilliSeconds(2);
-   while (loops < 40)  // maximum I have seen is 11 loops
+   // changed from 2 to 10ms
+   sleepMilliSeconds(10);
+   // change loop maximum to 50 for now, later change it with config file!
+   while (loops < 50)  // maximum I have seen is 11 loops
    {
       bytes = 0;
       ioctl(mpsFD, FIONREAD, &bytes);
@@ -363,7 +367,8 @@ int recvMPS(char *msg, size_t len)
    }
    if (statTuneFlag)
       DPRINT2(1,"recvMPS %s loops= %d\n",msg,loops);
-   return( (loops < 40) ? 0 : -1);
+   size_t slen = strlen(msg);
+   return( ((loops < 50) && (slen>0)) ? 0 : -1);
 }
 
 static void recvTuneMPS(FILE *fd)
@@ -449,12 +454,20 @@ void statusMPS(void)
       return;
    }
    if ( !recvMPS(msg, sizeof(msg)))
-      setMpsRfstatus( atoi(msg) );
+   {
+      rfstate = atoi(msg);
+      setMpsRfstatus( rfstate );
+   }
+
 
    if (sendMPS("wgstatus?\n"))
       return;
    if ( !recvMPS(msg, sizeof(msg)))
-      setMpsWgstatus( atoi(msg) );
+      {
+         wgstate = atoi(msg);
+         setMpsWgstatus( wgstate );
+
+      }
 
    if (sendMPS("lockstatus?\n"))
       return;
@@ -556,19 +569,18 @@ void mpsPower(int power)
 
 void acqMPS(int stage)
 {
-   static int wgstate;
-   static int rfstate;
+   //here was static int declaration (without initialization) -> now at top
    char msg[512];
 
       DPRINT1(1,"acqMPS stage= %d\n", stage);
    if (stage == 0)  // initialization prior to acquisition
    {
-      wgstate = rfstate = 0;
+      //wgstate = rfstate = 0;
       if (sendMPS("rfstatus?\n"))
          return;
       if ( !recvMPS(msg, sizeof(msg)))
          rfstate = atoi(msg);
-
+      //no sleepMilliSeconds()
       if (sendMPS("wgstatus?\n"))
          return;
       if ( !recvMPS(msg, sizeof(msg)))
