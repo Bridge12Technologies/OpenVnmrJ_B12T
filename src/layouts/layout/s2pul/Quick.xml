@@ -49,7 +49,7 @@
       useref="no"
       subtype="Titled"
       >
-      <group loc="30 30" size="330 115"
+      <group loc="30 30" size="330 135"
         border="None"
         side="Top"
         justify="Left"
@@ -60,6 +60,18 @@
         subtype="Untitled"
         expanded="yes"
         >
+        <check loc="145 105" size="20 20"
+          style="Label1"
+          vq="B12HWTriggerFlag"
+          vc="B12HWTriggerFlag=1"
+          vc2="B12HWTriggerFlag=0"
+          set="$VALUE=(B12HWTriggerFlag=1)"
+          />
+        <label loc="35 105" size="140 20"
+          style="Label1"
+          label="HW Trigger"
+          justify="Left"
+          />
         <menu loc="145 85" size="150 20"
           style="PlainText"
           label="menu"
