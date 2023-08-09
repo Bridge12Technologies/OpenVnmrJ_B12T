@@ -16,7 +16,7 @@
     subtype="Basic"
     expanded="yes"
     >
-    <group loc="265 150" size="385 95"
+    <group loc="265 150" size="470 95"
       style="Heading1"
       label="Receiver"
       border="Etched"
@@ -35,7 +35,7 @@
         digits="0"
         disable="Grayed out"
         />
-      <label loc="235 45" size="45 20"
+      <label loc="235 45" size="140 20"
         style="Label1"
         label="HW Trigger Enable"
         justify="Left"
