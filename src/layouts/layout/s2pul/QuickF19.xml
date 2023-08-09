@@ -49,7 +49,7 @@
       useref="no"
       subtype="Titled"
       >
-      <group loc="35 30" size="325 90"
+      <group loc="35 30" size="325 110"
         border="None"
         side="Top"
         justify="Left"
@@ -60,6 +60,18 @@
         subtype="Untitled"
         expanded="yes"
         >
+        <check loc="140 85" size="20 20"
+          style="Label1"
+          vq="B12HWTriggerFlag"
+          vc="B12HWTriggerFlag=1"
+          vc2="B12HWTriggerFlag=0"
+          set="$VALUE=(B12HWTriggerFlag=1)"
+          />
+        <label loc="30 85" size="140 20"
+          style="Label1"
+          label="HW Trigger"
+          justify="Left"
+          />
         <label loc="30 65" size="75 20"
           style="Label1"
           label="Pulse angle"
