@@ -83,22 +83,6 @@ struct _Globals {
 
 typedef struct _Globals Globals;
 
-// for now only a few parameters
-struct  _b12p_mpsPulseParameters{
-   int pulseCounter;
-   int pulseCounterOffValue;
-   int mpsInitStatus;
-};
-
-typedef struct _b12p_mpsPulseParameters b12p_mpsPulseParameters;
-
-void set_b12p_mpsPulseParameters_default(b12p_mpsPulseParameters* parameters)
-{
-   parameters->pulseCounter=0;
-   parameters->pulseCounterOffValue=0;
-   parameters->mpsInitStatus=0; // currently not used as this will interfere with the pmw value; this will be implemented once mroe details are clear
-}
-
 struct _Exps {
                   int nt;
                   int segments;
@@ -553,10 +537,13 @@ int main (int argc, char *argv[])
    Exps exps;
    int pbRes;
 
-   // initaize and set defaults for b12p_mpsPulseParameters struct
-   b12p_mpsPulseParameters b12p_mpsParameters;
-   set_b12p_mpsPulseParameters_default(&b12p_mpsParameters);
-	
+   /*
+    * Blank and ringdown_delay values, semi global
+    */
+   double _b12p_blank_delay=0;
+   double _b12p_ringdown_delay=0;
+
+
    // Special cases to handle configuration file
    if (argc == 3)
    {
@@ -813,26 +800,13 @@ int main (int argc, char *argv[])
          {
             if (blank_delay > 0.0)
             {
-               if (globals.debug)
-               {
-                  diagMessage("call pb_inst_radio_shape(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%g) = ",
-                                            0, PHASE090, PHASE000, 0,
-                  TX_DISABLE, exps.phaseReset,
-                  NO_TRIGGER, NO_SHAPE, AMP0,
-                  AMP_UNBLANK + exps.mpsStatus,
-                  CONTINUE, NO_DATA, blank_delay * 1e9);
-               }
-               pbRes = pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
-                  TX_DISABLE, exps.phaseReset,
-                  NO_TRIGGER, NO_SHAPE, AMP0,
-                  AMP_UNBLANK + exps.mpsStatus,
-                  CONTINUE, NO_DATA, blank_delay * 1e9);
-               if (globals.debug)
-                  diagMessage("%d (for blank_delay > 0)\n", pbRes);
-               exps.exp_time += blank_delay;
+               // now in ACQUIRE
+               _b12p_blank_delay=blank_delay;
             }
             if (ringdown_delay > 0.0)
             {
+               //now in ACQUIRE
+               _b12p_ringdown_delay=ringdown_delay;
                if (globals.debug)
                {
                   diagMessage("call pb_inst_radio_shape(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%g) = ",
@@ -847,39 +821,6 @@ int main (int argc, char *argv[])
                   NO_TRIGGER, exps.useShape, exps.useAmp,
 		            AMP_UNBLANK + exps.mpsStatus,
                   CONTINUE, NO_DATA, duration * 1e9);
-
-
-               if (globals.debug)
-               {
-                  diagMessage("%d (for ringdown_delay > 0)\n", pbRes);
-                  diagMessage("call pb_inst_radio_shape(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%g) = ",
-                                            0, PHASE090, PHASE000, 0,
-                  TX_DISABLE, exps.phaseReset,
-                  NO_TRIGGER, NO_SHAPE, AMP0,
-		            exps.mpsStatus,
-                  exps.opCode, exps.opCodeData, ringdown_delay * 1e9);
-               }
-
-               /* setting the MPS external status to zero after the specified pulse */
-               b12p_mpsParameters.pulseCounter+=1;
-               if (b12p_mpsParameters.pulseCounter > b12p_mpsParameters.pulseCounterOffValue)
-               {
-                  exps.mpsStatus = 0;
-                  if (globals.debug)
-                  {
-                     diagMessage(" (set exps.mpsStatus to 0) ");
-                  }
-               }
-
-               pbRes = pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
-                  TX_DISABLE, exps.phaseReset,
-                  NO_TRIGGER, NO_SHAPE, AMP0,
-		            exps.mpsStatus,
-                  exps.opCode, exps.opCodeData, ringdown_delay * 1e9);
-               if (globals.debug)
-               {
-                  diagMessage("%d (for ringdown_delay > 0)\n", pbRes);
-               }
             }
             else
             {
@@ -898,29 +839,66 @@ int main (int argc, char *argv[])
 		            AMP_UNBLANK + exps.mpsStatus,
                   exps.opCode, exps.opCodeData, duration * 1e9);
 
-               /* setting the MPS external status to zero after the specified pulse */
-               b12p_mpsParameters.pulseCounter+=1;
-               if (b12p_mpsParameters.pulseCounter > b12p_mpsParameters.pulseCounterOffValue)
-               {
-                  exps.mpsStatus = 0;
-                  if (globals.debug)
-                  {
-                     diagMessage(" (set exps.mpsStatus to 0 )");
-                  }
-               }
-
                if (globals.debug)
                {
                   diagMessage("%d (for ringdown_delay <= 0)\n", pbRes);
                }
             }
-            exps.exp_time += duration + ringdown_delay;
+            exps.exp_time += duration;
             resetExp(pbRes, &exps);
          }
       }
       else if ( ! strcmp(r->inst,"ACQUIRE") )
       {
          int recIndex = atoi(r->vals);
+
+         if (_b12p_blank_delay>0)
+         {
+            if (globals.debug)
+                  {
+                     diagMessage("call pb_inst_radio_shape(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%g) = ",
+                                             0, PHASE090, PHASE000, 0,
+                     TX_DISABLE, exps.phaseReset,
+                     NO_TRIGGER, NO_SHAPE, AMP0,
+                     AMP_UNBLANK + exps.mpsStatus,
+                     CONTINUE, NO_DATA, _b12p_blank_delay * 1e9);
+                  }
+            pbRes = pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
+               TX_DISABLE, exps.phaseReset,
+               NO_TRIGGER, NO_SHAPE, AMP0,
+               AMP_UNBLANK + exps.mpsStatus,
+               CONTINUE, NO_DATA, _b12p_blank_delay * 1e9);
+            if (globals.debug)
+               diagMessage("%d (for blank_delay > 0)\n", pbRes);
+            exps.exp_time += blank_delay;
+         }
+
+         if (_b12p_ringdown_delay>0)
+         {
+               if (globals.debug)
+               {
+                  diagMessage("%d (for ringdown_delay > 0)\n", pbRes);
+                  diagMessage("call pb_inst_radio_shape(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%g) = ",
+                                            0, PHASE090, PHASE000, 0,
+                  TX_DISABLE, exps.phaseReset,
+                  NO_TRIGGER, NO_SHAPE, AMP0,
+		            exps.mpsStatus,
+                  exps.opCode, exps.opCodeData, _b12p_ringdown_delay * 1e9);
+               }
+
+               pbRes = pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
+                  TX_DISABLE, exps.phaseReset,
+                  NO_TRIGGER, NO_SHAPE, AMP0,
+		            exps.mpsStatus,
+                  exps.opCode, exps.opCodeData, _b12p_ringdown_delay * 1e9);
+               if (globals.debug)
+               {
+                  diagMessage("%d (for ringdown_delay > 0)\n", pbRes);
+               }
+               exps.exp_time += _b12p_ringdown_delay;
+         }
+
+
          if (globals.debug)
          {
             diagMessage("call pb_inst_radio_shape(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%g) = ",
@@ -981,6 +959,9 @@ int main (int argc, char *argv[])
 	           0,
                STOP, NO_DATA, MIN_DELAY);
          exps.exp_time += MIN_DELAY * 1e-9;
+
+         // 10% extra time to take into account the typical communication delays
+         exps.exp_time = exps.exp_time*1.1;
 
           if (globals.debug)
           {
