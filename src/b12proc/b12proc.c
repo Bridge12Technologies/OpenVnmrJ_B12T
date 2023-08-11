@@ -870,7 +870,7 @@ int main (int argc, char *argv[])
                CONTINUE, NO_DATA, _b12p_blank_delay * 1e9);
             if (globals.debug)
                diagMessage("%d (for blank_delay > 0)\n", pbRes);
-            exps.exp_time += blank_delay;
+            exps.exp_time += _b12p_blank_delay;
          }
 
          if (_b12p_ringdown_delay>0)
