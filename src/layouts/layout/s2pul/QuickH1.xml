@@ -287,6 +287,13 @@
           label="HW Trigger"
           justify="Left"
           />
+        <check loc="145 105" size="20 20"
+          style="Label1"
+          label="External amplifier"
+          vc="B12SCNControl('extamp 1','silent')"
+          vc2="B12SCNControl('intamp 1','silent')"
+          set="$VALUE=(B12HWTriggerFlag=1)"
+          />
         <group loc="25 125" size="215 40"
           vq="customflag"
           show="$SHOW=(customflag='y')"
