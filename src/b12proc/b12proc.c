@@ -798,10 +798,26 @@ int main (int argc, char *argv[])
          iphase = (int) (phase+0.001);
          if (duration > 0.0)
          {
-            if (blank_delay > 0.0)
+            _b12p_blank_delay=blank_delay;
+            if (_b12p_blank_delay>0.0)
             {
-               // now in ACQUIRE
-               _b12p_blank_delay=blank_delay;
+               if (globals.debug)
+                     {
+                        diagMessage("call pb_inst_radio_shape(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%g) = ",
+                                                0, PHASE090, PHASE000, 0,
+                        TX_DISABLE, exps.phaseReset,
+                        NO_TRIGGER, NO_SHAPE, AMP0,
+                        AMP_UNBLANK + exps.mpsStatus,
+                        CONTINUE, NO_DATA, _b12p_blank_delay * 1e9);
+                     }
+               pbRes = pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
+                  TX_DISABLE, exps.phaseReset,
+                  NO_TRIGGER, NO_SHAPE, AMP0,
+                  AMP_UNBLANK + exps.mpsStatus,
+                  CONTINUE, NO_DATA, _b12p_blank_delay * 1e9);
+               if (globals.debug)
+                  diagMessage("%d (for blank_delay > 0)\n", pbRes);
+               exps.exp_time += _b12p_blank_delay;
             }
             if (ringdown_delay > 0.0)
             {
@@ -851,27 +867,6 @@ int main (int argc, char *argv[])
       else if ( ! strcmp(r->inst,"ACQUIRE") )
       {
          int recIndex = atoi(r->vals);
-
-         if (_b12p_blank_delay>0)
-         {
-            if (globals.debug)
-                  {
-                     diagMessage("call pb_inst_radio_shape(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%g) = ",
-                                             0, PHASE090, PHASE000, 0,
-                     TX_DISABLE, exps.phaseReset,
-                     NO_TRIGGER, NO_SHAPE, AMP0,
-                     AMP_UNBLANK + exps.mpsStatus,
-                     CONTINUE, NO_DATA, _b12p_blank_delay * 1e9);
-                  }
-            pbRes = pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
-               TX_DISABLE, exps.phaseReset,
-               NO_TRIGGER, NO_SHAPE, AMP0,
-               AMP_UNBLANK + exps.mpsStatus,
-               CONTINUE, NO_DATA, _b12p_blank_delay * 1e9);
-            if (globals.debug)
-               diagMessage("%d (for blank_delay > 0)\n", pbRes);
-            exps.exp_time += _b12p_blank_delay;
-         }
 
          if (_b12p_ringdown_delay>0)
          {

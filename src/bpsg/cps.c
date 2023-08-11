@@ -466,25 +466,25 @@ void initparms()
    {
        d1 = d1-rof1;
    }
-   else if ((rof1+pw)>d1 && d1>0)
+   else if (rof1>d1 && d1>0.0)
    {
-      d1=rof1+pw;
+      d1=rof1;
    }
-   if ((rof1+pw)<=d2)
+   if (rof1<=d2)
     {
        d2 = d2-rof1;
    }
-   else if ((rof1+pw)>d2 && d2>0)
+   else if (rof1>d2 && d2>0.0)
    {
-      d2=rof1+pw; // this is a simple solution
+      d2=rof1; // this is a simple solution
    }
-   if ((rof1+p1)<=d3)
+   if (rof1<=d3)
     {
        d3 = d3-rof1;
    }
-   else if ((rof1+p1)>d3 && d3>0)
+   else if (rof)>d3 && d3>0.0)
    {
-      d3=rof1+p1; // this is a simple solution
+      d3=rof1; // this is a simple solution
    }
 
    // this needs theoretically p2, so it is not implemented
