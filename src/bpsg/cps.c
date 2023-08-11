@@ -482,7 +482,7 @@ void initparms()
     {
        d3 = d3-rof1;
    }
-   else if (rof)>d3 && d3>0.0)
+   else if (rof>d3 && d3>0.0)
    {
       d3=rof1; // this is a simple solution
    }
