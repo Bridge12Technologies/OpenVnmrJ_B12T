@@ -1,0 +1,35 @@
+"macro fid_display"
+
+mousebuttons:$b
+if (not $b) then
+    graphis:$gr
+    exists('fidscanmode','parameter'):$e
+    if (not $e) then return endif
+    strstr(fidscanmode, 's'):$spec
+    if ($spec) then
+        if ($gr <> 'ds') then
+          recordOff wft('nods') ds refresh sleep(0.01) peak:$a,$f,$a2 abs($a2*fidnorm):fidarea
+        else
+	  getdsstat:$dsstat
+	  if ($dsstat <> 'PHASE') and ($dsstat <> '0th PH') and ($dsstat <> '1st PH') then
+	    recordOff wft('nods','nopars') ds refresh sleep(0.01) peak:$a,$f,$a2 abs($a2*fidnorm):fidarea
+	  endif
+        endif
+    else
+        if ($gr <> 'df') then
+          recordOff dfid refresh sleep(0.01)
+          // I don't know why the following was needed.
+          // It prevents the "crf" field being updated on the screen,
+          // and I don't see any problem without it. -- Chris
+          expactive:$e
+          if (not $e) then
+            recordOff dfid('fidshim')
+          endif
+        else
+	  getdfstat:$dfstat
+	  if ($dfstat <> 'PHASE') then
+	     recordOff dfid('fidshim') df refresh sleep(0.01)
+	  endif
+        endif
+    endif
+endif
