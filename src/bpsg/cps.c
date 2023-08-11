@@ -478,14 +478,17 @@ void initparms()
    {
       d2=rof1+pw; // this is a simple solution
    }
-   if ((rof1+pw)<=d3)
+   if ((rof1+p1)<=d3)
     {
        d3 = d3-rof1;
    }
-   else if ((rof1+pw)>d3 && d3>0)
+   else if ((rof1+p1)>d3 && d3>0)
    {
-      d3=rof1+pw; // this is a simple solution
+      d3=rof1+p1; // this is a simple solution
    }
+
+   // this needs theoretically p2, so it is not implemented
+   /*
    if (rof1<=d4)
     {
        d4 = d4-rof1;
@@ -494,6 +497,7 @@ void initparms()
    {
       d4=rof1+pw; // this is a simple solution
    }
+   */
 
 
 }
