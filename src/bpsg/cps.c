@@ -468,7 +468,7 @@ void initparms()
    }
    else if (rof1>d1 && d1>0.0)
    {
-      d1=rof1;
+      d1=0.0;
    }
    if (rof1<=d2)
     {
@@ -476,7 +476,7 @@ void initparms()
    }
    else if (rof1>d2 && d2>0.0)
    {
-      d2=rof1; // this is a simple solution
+      d2=0.0; // this is a simple solution
    }
    if (rof1<=d3)
     {
@@ -484,7 +484,7 @@ void initparms()
    }
    else if (rof1>d3 && d3>0.0)
    {
-      d3=rof1; // this is a simple solution
+      d3=0.0; // this is a simple solution
    }
 
    // this needs theoretically p2, so it is not implemented
