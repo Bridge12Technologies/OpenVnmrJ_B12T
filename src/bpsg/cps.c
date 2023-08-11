@@ -448,6 +448,54 @@ void initparms()
      * char 2 is for temp
      */
 
+    /* check here for rof1 behaviour and limit d1/d2, all are doubles
+     *
+     * For now: no loop structure but hardcoded for d1 to d4
+     *
+     */
+    /*
+     * rof1<=d1 -> just subtract rof1
+     * rof1 >d1 && d1>0 -> make d1 at least rof1
+     * rof1<=d2 && d2>0 -> just subtract rof1
+     * rof >d2 && d2>0 -> tbd, current simple solution: d2=rof1
+     * wanted behaviour: keep trigger low flag? this would interfere with the pulsesequence and therefore needs access to the pulsesequence function
+     * better solution 1: implement extra command in pulsesequence() that allows keeping the flag low?
+     * better solution 2: change b12proc to allow better pulse Sequence handling, but now b12proc is no longer a supid parser
+     */
+   if (rof1<=d1)
+   {
+       d1 = d1-rof1;
+   }
+   else if (rof1>d1 && d1>0)
+   {
+      d1=rof1;
+   }
+   if (rof1<=d2)
+    {
+       d2 = d2-rof1;
+   }
+   else if (rof1>d2 && d2>0)
+   {
+      d2=rof1; // this is a simple solution
+   }
+   if (rof1<=d3)
+    {
+       d3 = d3-rof1;
+   }
+   else if (rof1>d3 && d3>0)
+   {
+      d3=rof1; // this is a simple solution
+   }
+   if (rof1<=d4)
+    {
+       d4 = d4-rof1;
+   }
+   else if (rof1>d4 && d4>0)
+   {
+      d4=rof1; // this is a simple solution
+   }
+
+
 }
 /*-----------------------------------------------------------------
 |	getval()/1
