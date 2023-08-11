@@ -613,7 +613,7 @@ int main (int argc, char *argv[])
       {
          // scan values
          double pulseprogVal;
-         sscanf(r->vals,"%lg %d", &pulseprogVal);
+         sscanf(r->vals,"%lg", &pulseprogVal);
 
          exps.elem= pulseprogVal;
          exps.opCode = CONTINUE;
