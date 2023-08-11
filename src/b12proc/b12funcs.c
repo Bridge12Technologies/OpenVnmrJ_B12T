@@ -63,47 +63,6 @@ static SHR_MEM_ID  ShrExpInfo = NULL;  /* Shared Memory Object */
 static struct datafilehead fidfileheader;
 static struct datablockhead fidblockheader;
 
-/* dummy struct for now */
-#ifdef XXX
-typedef struct  {
-			long np;
-			long ct;
-			long bs;
-			long elemid;
-			long v1;
-			long v2;
-			long v4;
-			long v5[10];
-		  } lc;
-#endif
-
-#ifdef LINUX
-struct recvProcSwapbyte
-{
-   short s1;
-   short s2;
-   short s3;
-   short s4;
-   int  l1;
-   int  l2;
-   int  l3;
-   int  l4;
-   int  l5;
-};
-
-typedef union
-{
-   struct datablockhead *in1;
-   struct recvProcSwapbyte *out;
-} recvProcHeaderUnion;
-
-typedef union
-{
-   float *fval;
-   int   *ival;
-} floatInt;                                                                               
-#endif
-
 extern void diagMessage(const char *format, ...);
 /* char tmp[IBUF_SIZE+1]; */
 
@@ -234,6 +193,7 @@ int InitialFileHeaders()
  
    fidfileheader.nbheaders = 1;
    fidfileheader.status    = S_DATA | S_OLD_COMPLEX;/* init status FID */
+   fidfileheader.status   |= S_32;
    fidfileheader.vers_id   = 0;
 #ifdef LINUX
    fidfileheader.nblocks   = htonl(fidfileheader.nblocks);
@@ -248,8 +208,8 @@ int InitialFileHeaders()
 #endif
 
         /* --------------------  FID Header  ---------------------------- */
+   // No need to byte-swap zero
    fidblockheader.scale = (short) 0;
-   fidblockheader.status = S_DATA | S_OLD_COMPLEX;/* init status to fid*/
    fidblockheader.index = (short) 0;
    fidblockheader.mode = (short) 0;
    fidblockheader.ctcount = (long) 0;
@@ -257,28 +217,7 @@ int InitialFileHeaders()
    fidblockheader.rpval = (float) 0.0;
    fidblockheader.lvl = (float) 0.0;
    fidblockheader.tlt = (float) 0.0;
-   if ( expInfo->DataPtSize == 4)  /* dp='y' (4) */
-   {                                
-      fidfileheader.status |= S_32;
-      fidblockheader.status |= S_32;
-   }
-#ifdef LINUX
-   {
-      recvProcHeaderUnion hU;
-                                                                                
-      fidfileheader.status    = htons(fidfileheader.status);
-      hU.in1 = &fidblockheader;
-      hU.out->s1 = htons(hU.out->s1);
-      hU.out->s2 = htons(hU.out->s2);
-      hU.out->s3 = htons(hU.out->s3);
-      hU.out->s4 = htons(hU.out->s4);
-      hU.out->l1 = htonl(hU.out->l1);
-      hU.out->l2 = htonl(hU.out->l2);
-      hU.out->l3 = htonl(hU.out->l3);
-      hU.out->l4 = htonl(hU.out->l4);
-      hU.out->l5 = htonl(hU.out->l5);
-   }
-#endif
+   fidblockheader.status = fidfileheader.status;
    return(0);
 }
 

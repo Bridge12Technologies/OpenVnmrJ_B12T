@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 
 <template name="Mps" element="pages" type="sample" >
-  <group size="700 180"
+  <group size="530 180"
     style="Heading1"
     label="MPS"
     vq="system personaType customflag cppauseflg"
@@ -20,7 +20,7 @@
     rows="1"
     columns="1"
     >
-    <group loc="145 25" size="550 150"
+    <group loc="145 25" size="380 150"
       border="None"
       tab="no"
       enable="no"
@@ -29,12 +29,12 @@
       rows="1"
       columns="1"
       >
-      <label loc="355 100" size="65 25"
+      <label loc="220 30" size="65 25"
         style="Label1"
         label="MPS mode"
         justify="Left"
         />
-      <menu loc="420 100" size="85 25"
+      <menu loc="285 30" size="85 25"
         style="PlainText"
         label="menu"
         vq="mps"
@@ -59,7 +59,7 @@
           chval="ext"
           />
       </menu>
-      <button loc="420 60" size="85 30"
+      <button loc="285 0" size="85 30"
         style="Heading2"
         label="MPS Reset"
         vc="write('line3','Reset will take a few seconds') sethw('mps','reset'):$e write('line3','Reset complete') mpsfreq=9.5 mpspower=0"
@@ -72,14 +72,7 @@
         label="Reflected power"
         justify="Left"
         />
-      <check loc="165 60" size="120 30"
-        style="Label1"
-        label="Frequency Lock"
-        vc="sethw('mps','lockstatus 1'):$e"
-        vc2="sethw('mps','lockstatus 0'):$e"
-        statpar="mpsLkStat"
-        />
-      <button loc="205 125" size="85 25"
+      <button loc="285 125" size="85 25"
         style="Heading2"
         label="Set H1"
         vc="setmps('setH1')"
@@ -109,22 +102,40 @@
         label="H1 MHz (from MPS)"
         justify="Left"
         />
+<<<<<<< HEAD
       <entry loc="105 0" size="65 30"
+=======
+      <entry loc="125 0" size="70 25"
+>>>>>>> develop
         style="PlainText"
         vq="mpsFreq"
         vc="setmps('freq',$VALUE)"
+<<<<<<< HEAD
         digits="5"
+=======
+        digits="8"
+        statpar="mpsFreq"
+>>>>>>> develop
         />
-      <textmessage loc="105 60" size="40 30"
+      <textmessage loc="125 60" size="40 30"
         style="Info"
         label="0.6"
         statpar="mpsRxMv"
         />
+<<<<<<< HEAD
       <entry loc="105 30" size="65 30"
+=======
+      <entry loc="125 30" size="70 25"
+>>>>>>> develop
         style="PlainText"
         vq="mpsPower"
         vc="setmps('power',$VALUE)"
+<<<<<<< HEAD
         digits="3"
+=======
+        digits="4"
+        statpar="mpsPower"
+>>>>>>> develop
         />
       <label loc="5 0" size="95 30"
         style="Label1"
@@ -204,6 +215,13 @@
       style="Heading1"
       label="Microwave Power Supply"
       justify="Left"
+      />
+    <check loc="10 145" size="120 30"
+      style="Label1"
+      label="Frequency Lock"
+      vc="sethw('mps','lockstatus 1'):$e"
+      vc2="sethw('mps','lockstatus 0'):$e"
+      statpar="mpsLkStat"
       />
   </group>
 </template>
