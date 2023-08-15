@@ -955,9 +955,6 @@ int main (int argc, char *argv[])
                STOP, NO_DATA, MIN_DELAY);
          exps.exp_time += MIN_DELAY * 1e-9;
 
-         // error not here but in OVJ
-         exps.exp_time = exps.exp_time*1.0;
-
           if (globals.debug)
           {
              diagMessage("call pb_stop_programming\n");
