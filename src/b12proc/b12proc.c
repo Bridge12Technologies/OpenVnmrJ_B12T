@@ -535,6 +535,7 @@ int main (int argc, char *argv[])
    Globals globals;
    Exps exps;
    int pbRes;
+   int dummySequence=0;
 	
    // Special cases to handle configuration file
    if (argc == 3)
@@ -917,6 +918,16 @@ int main (int argc, char *argv[])
           if (globals.debug)
                diagMessage("call pb_start\n");
          pb_start();
+         if(atof(r->vals)<0)
+         {
+            if (globals.debug)
+            {
+               diagMessage("Dummy sequence value: %lf\n",atof(r->vals));
+            }
+         	sleepMilliSeconds(5);
+         	dummySequence=1;
+         	break;
+         }
          globals.board_start = 1;
          if (getData( &globals, &exps))
             break;
@@ -1120,8 +1131,11 @@ int main (int argc, char *argv[])
          diagMessage("call pb_close\n");
       pb_close();
    }
-   diagMessage("call endComm\n");
-   endComm();
+   if (dummySequence==0)
+   {
+	   diagMessage("call endComm\n");
+	   endComm();
+   }
    if (re)
       free(re);
    if (im)
