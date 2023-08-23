@@ -1,9 +1,5 @@
-"macro tocreate a mock MPS experiment with OVJ"
-
-" use experiment 999"
-cexp(999):$e
-jexp(999):$e
+"macro to create a mock MPS experiment with OVJ"
 
 "use predefined macro function"
-$shellcmd='/vnmr/acqbin/b12proc /vnmr/maclib/b12MPS_extFile'
+$shellcmd='/vnmr/acqbin/B12proc /vnmr/maclib/b12MPS_extFile'
 shell($shellcmd)
