@@ -161,7 +161,7 @@
       <check loc="5 75" size="50 25"
         style="Label1"
         label="Ext"
-        vc="sethw('mps','rfstatus 2'):$e"
+        vc="sethw('mps','rfstatus 2'):$e B12_mps_ext_mode"
         vc2="sethw('mps','rfstatus 0'):$e"
         statpar="mpsRfExt"
         />
