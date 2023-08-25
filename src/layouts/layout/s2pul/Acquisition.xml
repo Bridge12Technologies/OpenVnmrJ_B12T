@@ -16,7 +16,7 @@
     subtype="Basic"
     expanded="yes"
     >
-    <group loc="265 150" size="365 75"
+    <group loc="265 150" size="470 95"
       style="Heading1"
       label="Receiver"
       border="Etched"
@@ -27,6 +27,20 @@
       useref="no"
       subtype="Basic"
       >
+      <entry loc="400 45" size="45 20"
+        style="PlainText"
+        vq="B12HWTriggerFlag"
+        vc="B12HWTriggerFlag=$VALUE"
+        set="$VALUE=B12HWTriggerFlag"
+        digits="0"
+        disable="Grayed out"
+        />
+      <label loc="280 45" size="140 20"
+        style="Label1"
+        label="HW Trigger Enable"
+        justify="Left"
+        />
+
       <entry loc="225 45" size="45 20"
         style="PlainText"
         vq="alfa"

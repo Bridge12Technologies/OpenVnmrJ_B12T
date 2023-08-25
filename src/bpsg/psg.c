@@ -808,12 +808,17 @@ int main(int argc, char *argv[])
               close_error(0);
               exit(0);
         }
-	if ( ! mpstuneflag)
-           fprintf(psgFile,"PULSEPROG_START     %d\n",ix);
+   if ( ! mpstuneflag)
+   {
+            fprintf(psgFile,"PULSEPROG_START     %d\n",ix);
+   }
+
 
 	createPS();
 	if ( ! mpstuneflag && ! tuneflag )
+    {
            fprintf(psgFile,"PULSEPROG_DONE      %d\n",ix);
+    }
 #ifdef XXX
         totaltime -= pad;
         if (var_active("ss",CURRENT))
