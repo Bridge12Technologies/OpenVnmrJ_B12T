@@ -218,6 +218,8 @@ void createPS()
     fprintf(psgFile,"PHASE_RESET 1\n");
     initElems();
     rlpower(tpwrf,0);
+      // add here new HWTrig command
+    fprintf(psgFile,"HWTRIG %d\n",int_HWTrigflag);
     pulsesequence();	/* generate Acodes from USER Pulse Sequence */
    if (acqtriggers == 0)
    {
