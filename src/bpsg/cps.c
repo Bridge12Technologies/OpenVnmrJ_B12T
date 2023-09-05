@@ -213,6 +213,7 @@ void createPS()
        pre_fidsequence();		/* users pre fid functions */
     fprintf(psgFile,"PHASE_RESET 1\n");
     initElems();
+          rlpower(tpwrf,0);
     pulsesequence();	/* generate Acodes from USER Pulse Sequence */
    if (acqtriggers == 0)
    {
@@ -251,7 +252,16 @@ void initparms()
 	nf = 1.0;
     if ( P_getreal(CURRENT,"tpwrf",&tpwrf,1) < 0 )
     {
-        tpwrf = 100.0;                /* if not found assume 0 */
+        tpwrf = 100.0;  // if not found, use max
+    }
+    else if (!var_active("tpwrf",CURRENT))
+    {
+        int size;
+        int i;
+        tpwrf = 100.0;  // if not active, use max
+        P_getsize(CURRENT, "tpwrf", &size);
+        for (i = 2; i<=size; i++)
+           P_setreal(CURRENT, "tpwrf", 100.0, i);
     }
     if ( P_getreal(CURRENT,"rattn",&rattn,1) < 0 )
     {
