@@ -547,13 +547,14 @@ void mpsPower(int power)
 {
    char msg[128];
 
-   if ( !mpsCmdOk)
-      return;
    if (power < 0)
    {
-      if (sendMPS("rfstatus 0\n"))
-         return;
-      setMpsRfstatus( 0 );
+      if (mpsCmdOk)
+      {
+         if (sendMPS("rfstatus 0\n"))
+            return;
+         setMpsRfstatus( 0 );
+      }
    }
    else
    {
@@ -561,9 +562,12 @@ void mpsPower(int power)
       if (sendMPS(msg))
          return;
       setMpsPower( power );
-      if (sendMPS("rfstatus 2\n"))
-         return;
-      setMpsRfstatus( 2 );
+      if (mpsCmdOk)
+      {
+         if (sendMPS("rfstatus 2\n"))
+            return;
+         setMpsRfstatus( 2 );
+      }
    }
 }
 
