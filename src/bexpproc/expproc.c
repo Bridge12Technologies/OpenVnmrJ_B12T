@@ -42,6 +42,7 @@ extern int initApplSocket(void);
 extern void restartTasks(void);
 extern void wrtacqinfo2(void);
 extern void getRfSweepDelay();
+extern int chkExpQ(char *argstr);
 
 MSG_Q_ID pRecvMsgQ;
 
@@ -289,6 +290,12 @@ TheGrimReaper(void* arg)
         if (whodied)
 	{
 	   DPRINT1(1,"GrimReaper: '%s' Died.\n",whodied);
+      if ( ! strcmp(whodied,"B12proc") )
+      {
+         DPRINT(1,"Expproc: send chkQ\n");
+         chkExpQ("");
+      }
+
 	}
 	else
 	{
