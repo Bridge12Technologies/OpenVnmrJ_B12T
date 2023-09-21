@@ -103,6 +103,11 @@ int startAutoproc(char *autodir, char *autoDoneQ)  /* if not started then start 
     }
 }
 
+int activeB12proc()
+{
+   return(taskList[B12PROC].taskPid != -1);
+}
+
 int startB12proc(char *codefile)
 {
    char testpath[512];
