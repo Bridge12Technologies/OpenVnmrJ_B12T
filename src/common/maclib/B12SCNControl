@@ -45,7 +45,7 @@ shell('python3 /vnmr/bin/B12SCNControl.py state?'):$checkValue
 if ($checkValue = 'intamp') then
     tpwrf = 100
 elseif ( $checkValue = 'extamp' ) then
-    tpwrf = 1
+    tpwrf = 3.35
 else
     $shellcmd='rm /vnmr/tmp/B12*'
     shell($shellcmd)

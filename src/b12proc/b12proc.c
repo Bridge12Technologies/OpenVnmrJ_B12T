@@ -536,6 +536,12 @@ int main (int argc, char *argv[])
    Exps exps;
    int pbRes;
    int dummySequence=0;
+
+   /*
+    * Blank and ringdown_delay values, semi global
+    */
+   double _b12p_blank_delay=0;
+   double _b12p_ringdown_delay=0;
 	
    // Special cases to handle configuration file
    if (argc == 3)
@@ -708,6 +714,33 @@ int main (int argc, char *argv[])
             diagMessage("call pb_start_programming(%d)\n", PULSE_PROGRAM);
          pb_start_programming (PULSE_PROGRAM);
       }
+      // HWTRIGGER
+      else if( ! strcmp(r->inst,"HWTRIG_ENABLE") )
+      {
+         int b12p_int_HWTRIG=0;
+         sscanf(r->vals,"%d", &b12p_int_HWTRIG);
+         if (b12p_int_HWTRIG != 0)
+         {
+            if (globals.debug)
+            {
+               diagMessage("call pb_inst_radio_shape(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%g) = ",
+                                         0, PHASE090, PHASE000, 0,
+               TX_DISABLE, 0,
+               NO_TRIGGER, NO_SHAPE, AMP0, 0,
+               8, NO_DATA, MIN_DELAY);
+            }
+            pbRes=pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
+                           TX_DISABLE, NO_PHASE_RESET,
+                           NO_TRIGGER, NO_SHAPE, AMP0,
+                           0,
+                           8, NO_DATA, MIN_DELAY); //spincore.WAIT seems to be not working -> replaced with 8
+            if (globals.debug)
+            {
+               diagMessage("%d (for HWTrigger)\n", pbRes);
+            }
+
+         }
+      }
       else if ( ! strcmp(r->inst,"PHASE_RESET") )
       {
          exps.phaseReset = PHASE_RESET;
@@ -760,28 +793,31 @@ int main (int argc, char *argv[])
          iphase = (int) (phase+0.001);
          if (duration > 0.0)
          {
-            if (blank_delay > 0.0)
+            _b12p_blank_delay=blank_delay;
+            if (_b12p_blank_delay>0.0)
             {
                if (globals.debug)
-               {
-                  diagMessage("call pb_inst_radio_shape(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%g) = ",
-                                            0, PHASE090, PHASE000, 0,
-                  TX_DISABLE, exps.phaseReset,
-                  NO_TRIGGER, NO_SHAPE, AMP0,
-                  AMP_UNBLANK + exps.mpsStatus,
-                  CONTINUE, NO_DATA, blank_delay * 1e9);
-               }
+                     {
+                        diagMessage("call pb_inst_radio_shape(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%g) = ",
+                                                0, PHASE090, PHASE000, 0,
+                        TX_DISABLE, exps.phaseReset,
+                        NO_TRIGGER, NO_SHAPE, AMP0,
+                        AMP_UNBLANK + exps.mpsStatus,
+                        CONTINUE, NO_DATA, _b12p_blank_delay * 1e9);
+                     }
                pbRes = pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
                   TX_DISABLE, exps.phaseReset,
                   NO_TRIGGER, NO_SHAPE, AMP0,
                   AMP_UNBLANK + exps.mpsStatus,
-                  CONTINUE, NO_DATA, blank_delay * 1e9);
+                  CONTINUE, NO_DATA, _b12p_blank_delay * 1e9);
                if (globals.debug)
                   diagMessage("%d (for blank_delay > 0)\n", pbRes);
-               exps.exp_time += blank_delay;
+               exps.exp_time += _b12p_blank_delay;
             }
             if (ringdown_delay > 0.0)
             {
+               //now in ACQUIRE
+               _b12p_ringdown_delay=ringdown_delay;
                if (globals.debug)
                {
                   diagMessage("call pb_inst_radio_shape(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%g) = ",
@@ -796,25 +832,6 @@ int main (int argc, char *argv[])
                   NO_TRIGGER, exps.useShape, exps.useAmp,
 		            AMP_UNBLANK + exps.mpsStatus,
                   CONTINUE, NO_DATA, duration * 1e9);
-               if (globals.debug)
-               {
-                  diagMessage("%d (for ringdown_delay > 0)\n", pbRes);
-                  diagMessage("call pb_inst_radio_shape(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%g) = ",
-                                            0, PHASE090, PHASE000, 0,
-                  TX_DISABLE, exps.phaseReset,
-                  NO_TRIGGER, NO_SHAPE, AMP0,
-		            exps.mpsStatus,
-                  exps.opCode, exps.opCodeData, ringdown_delay * 1e9);
-               }
-               pbRes = pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
-                  TX_DISABLE, exps.phaseReset,
-                  NO_TRIGGER, NO_SHAPE, AMP0,
-		            exps.mpsStatus,
-                  exps.opCode, exps.opCodeData, ringdown_delay * 1e9);
-               if (globals.debug)
-               {
-                  diagMessage("%d (for ringdown_delay > 0)\n", pbRes);
-               }
             }
             else
             {
@@ -832,18 +849,46 @@ int main (int argc, char *argv[])
                   NO_TRIGGER, exps.useShape, exps.useAmp,
 		            AMP_UNBLANK + exps.mpsStatus,
                   exps.opCode, exps.opCodeData, duration * 1e9);
+
                if (globals.debug)
                {
                   diagMessage("%d (for ringdown_delay <= 0)\n", pbRes);
                }
             }
-            exps.exp_time += duration + ringdown_delay;
+            exps.exp_time += duration;
             resetExp(pbRes, &exps);
          }
       }
       else if ( ! strcmp(r->inst,"ACQUIRE") )
       {
          int recIndex = atoi(r->vals);
+
+         if (_b12p_ringdown_delay>0)
+         {
+               if (globals.debug)
+               {
+                  diagMessage("%d (for ringdown_delay > 0)\n", pbRes);
+                  diagMessage("call pb_inst_radio_shape(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%g) = ",
+                                            0, PHASE090, PHASE000, 0,
+                  TX_DISABLE, exps.phaseReset,
+                  NO_TRIGGER, NO_SHAPE, AMP0,
+		            exps.mpsStatus,
+                  exps.opCode, exps.opCodeData, _b12p_ringdown_delay * 1e9);
+               }
+
+               pbRes = pb_inst_radio_shape (0, PHASE090, PHASE000, 0,
+                  TX_DISABLE, exps.phaseReset,
+                  NO_TRIGGER, NO_SHAPE, AMP0,
+		            exps.mpsStatus,
+                  exps.opCode, exps.opCodeData, _b12p_ringdown_delay * 1e9);
+               if (globals.debug)
+               {
+                  diagMessage("%d (for ringdown_delay > 0)\n", pbRes);
+               }
+               exps.exp_time += _b12p_ringdown_delay;
+         }
+
+
          if (globals.debug)
          {
             diagMessage("call pb_inst_radio_shape(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%g) = ",
