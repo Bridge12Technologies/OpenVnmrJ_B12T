@@ -31,9 +31,8 @@ void initPowerVal()
 {
    int i;
 
-   powerVals = 1;
-   powerVal[0] = 1000; // Reg 0 is always hard pulse
-   for (i=1; i < POWER_REGISTERS; i++)
+   powerVals = 0;
+   for (i=0; i < POWER_REGISTERS; i++)
    {
       powerVal[i] = -1;
    }

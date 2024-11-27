@@ -78,6 +78,7 @@ extern int activeQnoWait(int oldproc, long key,        /*  procQfuncs.c */
 extern int expQshow(void);                             /*   expQfuncs.c */
 extern int startB12proc(char *codefile);
 extern void sigInfoproc();
+extern int activeB12proc();
 
 extern char systemdir[];
 extern int rfSweepDwell;
@@ -593,6 +594,11 @@ int chkExpQ(char *argstr)
            DPRINT(1,"chkExpQ: wait on processing, don't start any Q'd Exp.\n");
 	   return(0);   /* active processing is au('wait') don't start any queued Exp. yet */
         }
+     }
+     if (activeB12proc())
+     {
+        DPRINT(1,"chkExpQ: Previous B12proc still active\n");
+        return(0);
      }
 
      if (expQget(&ActiveExpInfo.ExpPriority, ActiveExpInfo.ExpId) != -1)
@@ -2100,6 +2106,10 @@ reserveConsole(char *args)
 	returnInterface = strtok( NULL, "\n" );
 	returnInterface = checkForNoInterface( returnInterface );
 	authInfo = strtok( NULL, "\n" );
+	deliverMessage( returnInterface, "DOWN" );
+	return 0;
+
+
 	modeInteractive = strtok( NULL, "\n" );
 
 	if (authInfo == NULL) {
@@ -2245,6 +2255,8 @@ int releaseConsole(char *args)
 	returnInterface = strtok( NULL, "\n" );
 	returnInterface = checkForNoInterface( returnInterface );
 	authInfo = strtok( NULL, "\n" );
+	deliverMessage( returnInterface, "DOWN" );
+	return( 0 );
 	modeInteractive = strtok( NULL, "\n" );
 
 	if (authInfo == NULL) {
@@ -2657,6 +2669,7 @@ completeStartLock()
 {
 	char	 msge[CONSOLE_MSGE_SIZE], recvmsg[CONSOLE_MSGE_SIZE];
 
+	return 0;
 	sprintf(recvmsg,"startI %s",ActiveExpInfo.ExpId);
   	DPRINT1(1,"Send Recvproc: '%s'\n",recvmsg);
 	deliverMessage( "Recvproc", recvmsg );
@@ -2674,6 +2687,7 @@ completeStartFID()
 	        recvmsg[CONSOLE_MSGE_SIZE],
 		sndmsge[2*CONSOLE_MSGE_SIZE];
 
+	return 0;
 	DPRINT( 1, "complete start FID called\n" );
 
 /* Send Recvproc its message first  */

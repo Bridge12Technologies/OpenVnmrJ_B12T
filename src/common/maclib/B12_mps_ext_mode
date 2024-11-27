@@ -1,0 +1,5 @@
+"macro to create a mock MPS experiment with OVJ"
+
+"use predefined macro function"
+$shellcmd='/vnmr/acqbin/B12proc /vnmr/bin/b12MPS_extFile'
+shell($shellcmd)

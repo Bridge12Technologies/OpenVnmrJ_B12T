@@ -35,7 +35,6 @@ $args = 'Acq(\'' + $args + '\')'
 $c1=0
 $args = $args+':$c1'
 exec($args):$e
-
 if ($##>0.5) then
   return($c1)
 endif

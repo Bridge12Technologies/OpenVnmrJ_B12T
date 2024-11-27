@@ -352,10 +352,12 @@ acqinfo_svc()
     * what our port number is
     */
    transp->xp_port = htons(transp->xp_port);
+   // Failure to register disables distributed ft3d processing and
+   // remote acqstat. Should not be a problem for B12
    if (!svc_register(transp, prog_num, prog_ver, acqinfoprog_2, IPPROTO_TCP))
    {
       (void) fprintf(stderr, "Error: unable to register (ACQINFOPROG, ACQINFOVERS, tcp).\n");
-      exit(1);
+      // exit(1);
    }
 
    // Tell Expproc that Infoproc is ready for signals.

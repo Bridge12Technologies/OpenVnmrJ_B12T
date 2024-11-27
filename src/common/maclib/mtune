@@ -1,4 +1,5 @@
 "macro mtune"
+" modified by Karl rieger to include B12SCNControl() vnmrj macro to control B12SCN "
 
 $action = 'setup'
 if ($# > 0) then
@@ -86,6 +87,18 @@ if ($action = 'setup') then
     disp3=0
   endif
 elseif ($action = 'start') then
+
+  "add B12SCNControl here and set power automatically to 0.01"
+  mtune('setpwr',1)
+  write('line3','Set power to 1!')
+  B12SCNControl('tune 1','silent')
+  sleep(0.05)
+  $scnMode=''
+  B12SCNControl('tune?','silent'):$scnMode
+  if ( $scnMode <> '1' ) then
+    write('error','Could not set Bridge12SCN in tune mode, aborting! Is the USB connected?')
+    return
+  endif
   wbs='mtune(`process`)'
   wexp='mtune(`reset`)'
   acqmode='mtune'
@@ -254,12 +267,12 @@ elseif ($action = 'stop') then
   acqmode=''
 
 elseif ($action = 'quit') then
-  mspec('clear')
-  aspAnno('clear')
-  clear(2)
   if (acqmode='mtune') then
     aa('Tuning Complete')
   endif
+  mspec('clear')
+  aspAnno('clear')
+  clear(2)
   acqmode=''
   tmpreturn('tutmp')
   exists('acqstatus','parameter'):$e
@@ -270,4 +283,17 @@ elseif ($action = 'quit') then
   endif
   acqstatus=16,102
   newdg dg
+
+  sleep(0.05)
+  $scnMode=''
+  B12SCNControl('tune 0','silent'):$scnMode
+  sleep(0.05)
+  B12SCNControl('state?','silent'):$scnMode
+  sleep(0.05)
+  if ( $scnMode = 'tune mode' ) then
+    write('error','Could not quit Bridge12SCN tune mode! Are you sure that the B12SCN is connected?')
+    return(1)
+  endif
+  write('line3','Ending tune mode, going back to state %s',$scnMode)
+
 endif
