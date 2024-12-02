@@ -140,6 +140,31 @@ void createPS()
        at = actual_at;
     }
     
+        /*
+     Get HWTrigger parameter
+
+     */
+    // try to read B12HWTriggerFlag and set it
+   // reading doesn't work, but the setting seems to work
+   // in futire: maybe allow to set waiting period?
+   int int_HWTrigflag=0;
+   double _tmpval;
+   int int_getFlag = P_getreal(CURRENT,"B12HWTriggerFlag",&_tmpval,1);
+   fprintf(psgFile,"DEBUG_PSG     %d\n",(int) int_getFlag);
+   if ( int_getFlag >= 0 )
+   {
+      int_HWTrigflag = (int) _tmpval;
+      fprintf(psgFile,"DEBUG_PSG  (inside) %d\n",int_HWTrigflag);
+      // could be done with a AND comparison but I like it explciit here
+      if (int_HWTrigflag != 0)
+      {
+         int_HWTrigflag=1;
+      }
+   }
+   else //explcicit > implicit (;
+   {
+      int_HWTrigflag = 0;
+   }
 
 //    loadshims();
 
@@ -193,6 +218,8 @@ void createPS()
     fprintf(psgFile,"PHASE_RESET 1\n");
     initElems();
     rlpower(tpwrf,0);
+      // add here new HWTrig command
+    fprintf(psgFile,"HWTRIG %d\n",int_HWTrigflag);
     pulsesequence();	/* generate Acodes from USER Pulse Sequence */
    if (acqtriggers == 0)
    {
@@ -424,6 +451,45 @@ void initparms()
      * char 1 is for spin
      * char 2 is for temp
      */
+
+        /* check here for rof1 behaviour and limit d1/d2, all are doubles
+     *
+     * For now: no loop structure but hardcoded for d1 to d4
+     *
+     */
+    /*
+     * rof1<=d1 -> just subtract rof1
+     * rof1 >d1 && d1>0 -> make d1 at least rof1
+     * rof1<=d2 && d2>0 -> just subtract rof1
+     * rof >d2 && d2>0 -> tbd, current simple solution: d2=rof1
+     * wanted behaviour: keep trigger low flag? this would interfere with the pulsesequence and therefore needs access to the pulsesequence function
+     * better solution 1: implement extra command in pulsesequence() that allows keeping the flag low?
+     * better solution 2: change b12proc to allow better pulse Sequence handling, but now b12proc is no longer a supid parser
+     */
+   if (rof1<=d1)
+   {
+       d1 = d1-rof1;
+   }
+   else if (rof1>d1 && d1>0.0)
+   {
+      d1=0.0;
+   }
+   if (rof1<=d2)
+    {
+       d2 = d2-rof1;
+   }
+   else if (rof1>d2 && d2>0.0)
+   {
+      d2=0.0; // this is a simple solution
+   }
+   if (rof1<=d3)
+    {
+       d3 = d3-rof1;
+   }
+   else if (rof1>d3 && d3>0.0)
+   {
+      d3=0.0; // this is a simple solution
+   }
 
 }
 /*-----------------------------------------------------------------
